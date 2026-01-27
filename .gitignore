@@ -1,0 +1,7 @@
+sing-box
+clients/*.json
+!clients/*.template.json
+*.tar.gz
+.DS_Store
+.claude/
+.serena/

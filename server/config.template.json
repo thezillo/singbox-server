@@ -1,0 +1,38 @@
+{
+  "log": {"level": "error", "timestamp": true},
+  "inbounds": [
+    {
+      "type": "vless",
+      "tag": "vless-reality",
+      "listen": "::",
+      "listen_port": 443,
+      "users": [{"uuid": "${VLESS_UUID_DEFAULT}"}, {"uuid": "${VLESS_UUID_ADGUARD}"}, {"uuid": "${VLESS_UUID_PROXY}"}],
+      "tls": {
+        "enabled": true,
+        "server_name": "www.google.com",
+        "reality": {
+          "enabled": true,
+          "handshake": {"server": "www.google.com", "server_port": 443},
+          "private_key": "${REALITY_PRIVATE_KEY}",
+          "short_id": ["${REALITY_SHORT_ID}"]
+        }
+      }
+    },
+    {
+      "type": "hysteria2",
+      "tag": "hysteria2",
+      "listen": "::",
+      "listen_port": 8443,
+      "users": [{"password": "${HYSTERIA_PASSWORD}"}],
+      "tls": {
+        "enabled": true,
+        "certificate_path": "/etc/sing-box/cert.pem",
+        "key_path": "/etc/sing-box/private.key"
+      }
+    }
+  ],
+  "outbounds": [
+    {"type": "direct", "tag": "direct"}
+  ],
+  "route": {"final": "direct"}
+}

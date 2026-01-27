@@ -1,0 +1,19 @@
+# Secrets - NEVER commit these
+config.json
+private.key
+cert.pem
+wgcf-account.toml
+wgcf-profile.conf
+wgcf
+reality_public.key
+CLIENT_INFO.txt
+.credentials
+Caddyfile
+www/
+
+# Keep templates and scripts
+!config.template.json
+!index.template.html
+!docker-compose.yaml
+!deploy.sh
+!clients/*.template.json

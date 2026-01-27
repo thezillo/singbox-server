@@ -1,0 +1,91 @@
+{
+  "log": { "level": "error" },
+  "dns": {
+    "servers": [
+      {
+        "tag": "proxy-dns",
+        "address": "https://dns.adguard-dns.com/dns-query",
+        "address_resolver": "bootstrap-dns",
+        "detour": "proxy",
+        "strategy": "ipv4_only"
+      },
+      {
+        "tag": "bootstrap-dns",
+        "address": "1.1.1.1",
+        "detour": "direct"
+      }
+    ],
+    "rules": [
+      { "outbound": "any", "server": "bootstrap-dns" }
+    ],
+    "final": "proxy-dns"
+  },
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "interface_name": "utun99",
+      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
+      "mtu": 1400,
+      "auto_route": true,
+      "strict_route": true,
+      "stack": "system"
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "vless",
+      "tag": "proxy",
+      "server": "${SERVER_IP}",
+      "server_port": 443,
+      "uuid": "${VLESS_UUID}",
+      "tls": {
+        "enabled": true,
+        "server_name": "www.google.com",
+        "utls": { "enabled": true, "fingerprint": "chrome" },
+        "reality": {
+          "enabled": true,
+          "public_key": "${REALITY_PUBLIC_KEY}",
+          "short_id": "${REALITY_SHORT_ID}"
+        }
+      }
+    },
+    {
+      "type": "hysteria2",
+      "tag": "hysteria2",
+      "server": "${SERVER_IP}",
+      "server_port": 8443,
+      "password": "${HYSTERIA_PASSWORD}",
+      "tls": {
+        "enabled": true,
+        "server_name": "bing.com",
+        "insecure": true
+      }
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    }
+  ],
+  "route": {
+    "rule_set": [
+      {
+        "tag": "geoip-bypass",
+        "type": "remote",
+        "format": "source",
+        "url": "https://storage.yandexcloud.net/sing-box/rule-set/geoip/${COUNTRY_CODE}.json",
+        "download_detour": "direct"
+      }
+    ],
+    "rules": [
+      { "action": "sniff" },
+      { "protocol": "dns", "action": "hijack-dns" },
+      { "ip_is_private": true, "outbound": "direct" },
+      { "rule_set": "geoip-bypass", "outbound": "direct" },
+      { "network": "udp", "outbound": "hysteria2" },
+      { "network": "tcp", "outbound": "proxy" }
+    ],
+    "final": "proxy",
+    "auto_detect_interface": true
+  }
+}
