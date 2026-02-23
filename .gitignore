@@ -5,3 +5,5 @@ clients/*.json
 .DS_Store
 .claude/
 .serena/
+.playwright-mcp/
+*.png
