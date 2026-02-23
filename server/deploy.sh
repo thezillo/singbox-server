@@ -828,7 +828,7 @@ generate_client_configs() {
             warp_plus_class=" plus"
         fi
     elif [ "$USE_WARP" = false ]; then
-        warp_status="OFF"
+        warp_status="WARP Off"
         warp_plus_class=" off"
     fi
     log INFO "  WARP status: $warp_status"

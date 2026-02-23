@@ -1,5 +1,7 @@
 # singbox-server
 
+> **[Читать на русском (README.ru.md)](README.ru.md)**
+
 One-click VPN server: **VLESS+REALITY** + **Hysteria2** with a web-based config page.
 
 Deploy on any Ubuntu/Debian or RHEL/CentOS/Fedora server and get a shareable link that auto-configures VPN on your phone.
@@ -25,8 +27,23 @@ curl -sSL https://raw.githubusercontent.com/thezillo/singbox-server/main/install
   | sudo WARP_LICENSE_KEY=xxxxxxxx-xxxxxxxx-xxxxxxxx bash -s -- --warp
 ```
 
+## How It Works
+
+```mermaid
+graph LR
+    A["📱 Your Phone\n💻 Your PC"] -- encrypted --> B["🖥 VPN Server"]
+    B -- "direct" --> C["🌐 Internet"]
+    B -. "with WARP" .-> D["☁️ Cloudflare"] -.-> C
+
+    style A fill:#1a1a2e,stroke:#0a84ff,color:#f0f0f5
+    style B fill:#1a1a2e,stroke:#30d158,color:#f0f0f5
+    style C fill:#1a1a2e,stroke:#ff9f0a,color:#f0f0f5
+    style D fill:#1a1a2e,stroke:#bf5af2,color:#f0f0f5
+```
+
 ## What You Get
 
+- **Smart routing** — local traffic stays local, only foreign traffic goes through the server. No need to toggle VPN on and off
 - **VLESS+REALITY** (port 443/tcp) — undetectable protocol that looks like regular HTTPS to Google
 - **Hysteria2** (port 8443/udp) — QUIC-based, optimized for speed on lossy networks
 - **Web config page** — share a link, phone auto-configures via the Sing-Box app
@@ -77,33 +94,27 @@ Client → Your Server → Cloudflare WARP → Internet
 
 | Platform | App | Setup |
 |----------|-----|-------|
-| **iOS** | [Sing-Box VT](https://apps.apple.com/app/sing-box-vt/id6673731168) | Open config link → Add profile |
+| **iOS / Mac / Apple TV** | [Sing-Box VT](https://apps.apple.com/app/sing-box-vt/id6673731168) | Open config link → Add profile |
+| **Windows** | [Sing-Box GUI](https://github.com/GUI-for-Cores/GUI.for.SingBox/releases/tag/v1.11.0) | Download → Import config |
 | **Android** | [Sing-Box](https://play.google.com/store/apps/details?id=io.nekohasekai.sfa) | Open config link → Add profile |
 | **Linux** | Built-in installer | `curl -sSL <linux-script-url> \| sudo bash` |
-| **macOS** | sing-box binary | `./run.sh` with `proxy.json` config (SOCKS5 on 127.0.0.1:1080) |
-| **Windows** | [NekoBox](https://github.com/MatsuriDayo/NekoBoxForAndroid) / [v2rayN](https://github.com/2dust/v2rayN) | Import share link from config page |
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────┐
-│                   Server                     │
-│                                              │
-│  ┌─────────────┐    ┌──────────────────┐    │
-│  │  sing-box    │    │     Caddy        │    │
-│  │             │    │                  │    │
-│  │ VLESS+REALITY│    │  HTTPS reverse   │    │
-│  │  :443/tcp   │    │  proxy on random  │    │
-│  │             │    │  port (10000-     │    │
-│  │ Hysteria2   │    │  60000)          │    │
-│  │  :8443/udp  │    │                  │    │
-│  │             │    │  Serves:         │    │
-│  │ ──outbound──│    │  • Config page   │    │
-│  │  direct or  │    │  • Client JSONs  │    │
-│  │  WARP ──────┼──► │  • Linux script  │    │
-│  └─────────────┘    └──────────────────┘    │
-│                                              │
-└─────────────────────────────────────────────┘
+```mermaid
+graph LR
+    Client([Client]) -->|443/tcp| SB
+    Client -->|8443/udp| SB
+    Client -->|random port| Caddy
+
+    subgraph Server
+        SB["<b>sing-box</b><br/>VLESS+REALITY :443/tcp<br/>Hysteria2 :8443/udp"]
+        Caddy["<b>Caddy</b><br/>HTTPS on random port<br/>Config page · Client JSONs · Linux script"]
+    end
+
+    SB -->|outbound| WARP{WARP?}
+    WARP -->|yes| CF([Cloudflare]) --> Internet([Internet])
+    WARP -->|no / direct| Internet
 ```
 
 ## Security

@@ -1,29 +1,32 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>VPN</title>
+    <title>Setup</title>
     <style>
         :root {
-            --bg: #000;
-            --bg-secondary: #1c1c1e;
-            --bg-tertiary: #2c2c2e;
-            --text-primary: #f5f5f7;
-            --text-secondary: #86868b;
-            --text-tertiary: #6e6e73;
+            --bg: #0a0a0f;
+            --bg-card: rgba(28, 28, 30, 0.55);
+            --bg-inner: rgba(255,255,255,0.04);
+            --bg-inner-hover: rgba(255,255,255,0.08);
+            --text-primary: #f0f0f5;
+            --text-secondary: #8e8e93;
+            --text-tertiary: #636366;
             --accent: #0a84ff;
             --accent-hover: #409cff;
             --border: rgba(255,255,255,0.08);
+            --border-hover: rgba(255,255,255,0.14);
             --success: #30d158;
+            --amber: #ff9f0a;
+            --purple: #bf5af2;
+            --glass-border: rgba(255,255,255,0.06);
+            --r: 16px;
+            --r-sm: 12px;
+            --r-xs: 8px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, sans-serif;
@@ -32,68 +35,228 @@
             min-height: 100vh;
             min-height: 100dvh;
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            overflow-x: hidden;
+        }
+
+        .bg-mesh {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-mesh::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            top: -200px;
+            right: -150px;
+            background: radial-gradient(circle, rgba(10, 132, 255, 0.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .bg-mesh::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            bottom: -100px;
+            left: -200px;
+            background: radial-gradient(circle, rgba(191, 90, 242, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .bg-orb {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(255, 159, 10, 0.06) 0%, transparent 70%);
+            border-radius: 50%;
         }
 
         .container {
-            max-width: 440px;
+            position: relative;
+            z-index: 1;
+            max-width: 480px;
             margin: 0 auto;
             padding: 60px 24px 40px;
+            animation: fadeIn 0.6s ease;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 48px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+
+        @keyframes tabIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Header ── */
+        .header { text-align: center; margin-bottom: 40px; }
 
         .logo {
-            width: 72px;
-            height: 72px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 18px;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            border-radius: 22px;
             margin: 0 auto 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.25);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3), inset 0 0 0 1px rgba(255,255,255,0.15);
+            position: relative;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%);
+            pointer-events: none;
         }
 
         .logo svg {
-            width: 36px;
-            height: 36px;
-            fill: white;
+            width: 38px;
+            height: 38px;
+            fill: none;
+            stroke: white;
+            stroke-width: 1.5;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
         }
 
         h1 {
-            font-size: 28px;
-            font-weight: 600;
-            letter-spacing: -0.5px;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.8px;
             margin-bottom: 8px;
+            background: linear-gradient(180deg, #fff 30%, #a0a0a8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .subtitle {
-            font-size: 15px;
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
             color: var(--text-secondary);
+            margin-top: 12px;
         }
 
-        .steps {
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        .status-badge.plus { color: var(--purple); border-color: rgba(191,90,242,0.25); }
+        .status-badge.plus .status-dot { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+        .status-badge.off { color: var(--text-tertiary); border-color: rgba(255,255,255,0.06); }
+        .status-badge.off .status-dot { background: var(--text-tertiary); box-shadow: none; }
+
+        /* ── Tabs ── */
+        .tab-bar {
             display: flex;
-            flex-direction: column;
-            gap: 16px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--r);
+            padding: 4px;
+            margin-bottom: 24px;
+            position: relative;
         }
 
-        .step {
-            background: var(--bg-secondary);
-            border-radius: 16px;
+        .tab-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 12px 6px;
+            border: none;
+            background: none;
+            color: var(--text-tertiary);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: var(--r-sm);
+            transition: color 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tab-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+        .tab-btn:hover { color: var(--text-secondary); }
+        .tab-btn.active { color: var(--text-primary); }
+        .tab-btn.active[data-tab="app"] { color: var(--accent); }
+        .tab-btn.active[data-tab="proxy"] { color: var(--amber); }
+
+        .tab-indicator {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            height: calc(100% - 8px);
+            width: calc(50% - 4px);
+            border-radius: var(--r-sm);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.15, 1), background 0.3s, box-shadow 0.3s;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .tab-indicator[data-active="app"] {
+            transform: translateX(0);
+            background: rgba(10,132,255,0.12);
+            box-shadow: 0 0 20px rgba(10,132,255,0.08);
+        }
+
+        .tab-indicator[data-active="proxy"] {
+            transform: translateX(100%);
+            background: rgba(255,159,10,0.12);
+            box-shadow: 0 0 20px rgba(255,159,10,0.08);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: tabIn 0.3s ease; }
+
+        /* ── Glass card ── */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--r);
             padding: 20px;
-            border: 1px solid var(--border);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: border-color 0.25s, box-shadow 0.25s;
         }
 
-        .step:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        .card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
         }
 
+        .card + .card { margin-top: 12px; }
+
+        /* ── Steps (iPhone) ── */
         .step-header {
             display: flex;
             align-items: center;
@@ -104,14 +267,14 @@
         .step-number {
             width: 28px;
             height: 28px;
-            background: var(--bg-tertiary);
+            background: rgba(10,132,255,0.15);
+            color: var(--accent);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 14px;
             font-weight: 600;
-            color: var(--text-secondary);
             flex-shrink: 0;
         }
 
@@ -121,89 +284,78 @@
             letter-spacing: -0.2px;
         }
 
-        .step-content {
-            padding-left: 42px;
-        }
+        .step-content { padding-left: 42px; }
 
+        /* ── Buttons ── */
         .btn {
             display: inline-flex;
             align-items: center;
             gap: 10px;
             padding: 14px 20px;
-            border-radius: 12px;
+            border-radius: var(--r-sm);
             font-size: 15px;
             font-weight: 500;
             text-decoration: none;
             transition: all 0.2s ease;
             border: none;
             cursor: pointer;
+            font-family: inherit;
         }
 
-        .btn svg {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-        }
+        .btn svg { width: 20px; height: 20px; flex-shrink: 0; }
 
         .btn-primary {
             background: var(--accent);
             color: white;
+            box-shadow: 0 4px 16px rgba(10,132,255,0.25);
         }
 
         .btn-primary:hover {
             background: var(--accent-hover);
-            transform: scale(1.02);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(10,132,255,0.35);
         }
 
         .btn-secondary {
-            background: var(--bg-tertiary);
+            background: var(--bg-inner);
             color: var(--text-primary);
+            border: 1px solid var(--border);
         }
 
         .btn-secondary:hover {
-            background: #3a3a3c;
+            background: var(--bg-inner-hover);
+            border-color: var(--border-hover);
         }
 
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .config-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+        /* ── Config options ── */
+        .config-options { display: flex; flex-direction: column; gap: 10px; }
 
         .config-option {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 14px 16px;
-            background: var(--bg-tertiary);
-            border-radius: 12px;
+            background: var(--bg-inner);
+            border-radius: var(--r-sm);
             text-decoration: none;
             color: var(--text-primary);
-            transition: all 0.2s ease;
+            transition: all 0.2s;
             border: 1px solid transparent;
         }
 
-        .config-option:hover {
-            background: #3a3a3c;
-            border-color: var(--border);
-        }
+        .config-option:hover { background: var(--bg-inner-hover); border-color: var(--border); }
 
         .config-option.recommended {
-            border-color: var(--accent);
-            background: rgba(10, 132, 255, 0.1);
+            border-color: rgba(10,132,255,0.3);
+            background: rgba(10,132,255,0.08);
         }
 
-        .config-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .config-option.recommended:hover {
+            border-color: rgba(10,132,255,0.5);
+            background: rgba(10,132,255,0.12);
         }
+
+        .config-info { display: flex; align-items: center; gap: 12px; }
 
         .config-icon {
             width: 40px;
@@ -214,37 +366,14 @@
             justify-content: center;
         }
 
-        .config-icon svg {
-            width: 22px;
-            height: 22px;
-        }
+        .config-icon svg { width: 22px; height: 22px; }
+        .config-icon.blue { background: rgba(10,132,255,0.15); }
+        .config-icon.blue svg { fill: var(--accent); }
+        .config-icon.green { background: rgba(48,209,88,0.15); }
+        .config-icon.green svg { fill: var(--success); }
 
-        .config-icon.blue {
-            background: rgba(10, 132, 255, 0.15);
-        }
-
-        .config-icon.blue svg {
-            fill: var(--accent);
-        }
-
-        .config-icon.green {
-            background: rgba(48, 209, 88, 0.15);
-        }
-
-        .config-icon.green svg {
-            fill: var(--success);
-        }
-
-        .config-text h3 {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .config-text p {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
+        .config-text h3 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+        .config-text p { font-size: 13px; color: var(--text-secondary); }
 
         .config-badge {
             font-size: 11px;
@@ -252,40 +381,178 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: var(--accent);
-            background: rgba(10, 132, 255, 0.15);
-            padding: 4px 8px;
+            background: rgba(10,132,255,0.12);
+            padding: 4px 10px;
             border-radius: 6px;
+            flex-shrink: 0;
         }
 
-        .config-arrow {
+        .config-arrow { color: var(--text-tertiary); }
+        .config-arrow svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+        .app-link {
+            font-size: 12px;
             color: var(--text-tertiary);
+            text-decoration: none;
+            padding-left: 2px;
         }
 
-        .config-arrow svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
-        }
+        .app-link:hover { color: var(--text-secondary); }
 
         .step-hint {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-top: 12px;
-            padding: 10px 12px;
-            background: rgba(48, 209, 88, 0.1);
-            border-radius: 10px;
+            padding: 12px 14px;
+            background: rgba(48,209,88,0.08);
+            border: 1px solid rgba(48,209,88,0.12);
+            border-radius: var(--r-xs);
             font-size: 13px;
             color: var(--success);
         }
 
-        .step-hint svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
+        .step-hint svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+
+        /* ── Linux tab ── */
+        .cmd-group { margin-bottom: 18px; }
+        .cmd-group:last-child { margin-bottom: 0; }
+
+        .cmd-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .badge-rec { background: rgba(255,159,10,0.15); color: var(--amber); }
+        .badge-opt { background: rgba(255,255,255,0.06); color: var(--text-tertiary); }
+
+        .code-block {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid var(--border);
+            border-radius: var(--r-xs);
+            font-family: ui-monospace, 'SF Mono', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            flex: 1;
+            color: var(--amber);
+            word-break: break-all;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            transition: all 0.2s;
             flex-shrink: 0;
         }
 
+        .copy-btn:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+
+        .cmd-hint {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 6px;
+            padding-left: 2px;
+        }
+
+        /* ── Proxy tab ── */
+        .proxy-section h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        .proxy-info { display: flex; flex-direction: column; gap: 8px; }
+
+        .proxy-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: var(--r-xs);
+            font-size: 13px;
+        }
+
+        .proxy-row span:first-child { color: var(--text-secondary); font-weight: 500; }
+        .proxy-row code { font-family: ui-monospace, 'SF Mono', monospace; color: var(--amber); font-weight: 500; }
+
+        .btn-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 18px;
+            background: rgba(255,159,10,0.1);
+            border: 1px solid rgba(255,159,10,0.2);
+            border-radius: var(--r-sm);
+            color: var(--amber);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-download:hover {
+            background: rgba(255,159,10,0.15);
+            border-color: rgba(255,159,10,0.35);
+            transform: translateY(-1px);
+        }
+
+        .btn-download svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+        .section-divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+        .proxy-steps { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+
+        .proxy-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .proxy-step-num {
+            width: 24px;
+            height: 24px;
+            background: rgba(255,159,10,0.12);
+            color: var(--amber);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        /* ── Footer ── */
         .footer {
             margin-top: 48px;
             text-align: center;
@@ -293,250 +560,98 @@
             font-size: 12px;
         }
 
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 10px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 500;
-            margin-top: 16px;
-        }
-
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--success);
-            box-shadow: 0 0 6px var(--success);
-        }
-
-        .status-badge.plus {
-            color: #bf5af2;
-            border-color: rgba(191, 90, 242, 0.3);
-        }
-
-        .status-badge.plus .status-dot {
-            background: #bf5af2;
-            box-shadow: 0 0 6px #bf5af2;
-        }
-
-        .advanced {
-            margin-top: 32px;
-        }
-
-        .advanced summary {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 12px;
-            font-size: 13px;
-            color: var(--text-tertiary);
-            cursor: pointer;
-            list-style: none;
-            transition: color 0.2s;
-        }
-
-        .advanced summary::-webkit-details-marker {
-            display: none;
-        }
-
-        .advanced summary:hover {
-            color: var(--text-secondary);
-        }
-
-        .advanced summary svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
-            transition: transform 0.2s;
-        }
-
-        .advanced[open] summary svg {
-            transform: rotate(180deg);
-        }
-
-        .advanced-content {
-            margin-top: 16px;
-            padding: 16px;
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-
-        .advanced-content h4 {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-        }
-
-        .proxy-info {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .proxy-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 12px;
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            font-size: 13px;
-        }
-
-        .proxy-row span:first-child {
-            color: var(--text-secondary);
-        }
-
-        .proxy-row code {
-            font-family: ui-monospace, monospace;
-            color: var(--text-primary);
-        }
-
-        .proxy-download {
-            margin-top: 12px;
-        }
-
-        .proxy-download a {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        .proxy-download a:hover {
-            text-decoration: underline;
-        }
-
-        .proxy-download svg {
-            width: 14px;
-            height: 14px;
-            fill: currentColor;
-        }
-
-        .code-block {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px;
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            font-family: ui-monospace, monospace;
-            font-size: 12px;
-            overflow-x: auto;
-        }
-
-        .code-block code {
-            flex: 1;
-            color: var(--success);
-            word-break: break-all;
-        }
-
-        .copy-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-
-        .copy-btn:hover {
-            background: rgba(255,255,255,0.1);
-            color: var(--text-primary);
-        }
-
-        .hint {
-            font-size: 12px;
-            color: var(--text-tertiary);
-            margin-top: 8px;
-        }
-
+        /* ── Responsive ── */
         @media (max-width: 480px) {
-            .container {
-                padding: 40px 20px 32px;
-            }
-
-            h1 {
-                font-size: 24px;
-            }
-
-            .step {
-                padding: 16px;
-            }
-
-            .step-content {
-                padding-left: 0;
-                margin-top: 12px;
-            }
+            .container { padding: 40px 16px 32px; }
+            h1 { font-size: 28px; }
+            .tab-btn { padding: 10px 4px; font-size: 12px; gap: 5px; }
+            .tab-btn svg { width: 16px; height: 16px; }
+            .card { padding: 16px; }
+            .step-content { padding-left: 0; margin-top: 12px; }
+            .code-block { padding: 12px; font-size: 11px; }
         }
     </style>
 </head>
 <body>
+    <div class="bg-mesh"><div class="bg-orb"></div></div>
+
     <div class="container">
         <div class="header">
             <div class="logo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg viewBox="0 0 24 24">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
             </div>
-            <h1>Настройка VPN</h1>
+            <h1 data-i18n="title">Setup</h1>
             <div class="status-badge${WARP_PLUS_CLASS}">
                 <span class="status-dot"></span>
                 ${WARP_STATUS}
             </div>
         </div>
 
-        <div class="steps">
-            <div class="step">
+        <div class="tab-bar">
+            <div class="tab-indicator" data-active="app"></div>
+            <button class="tab-btn active" data-tab="app" onclick="switchTab('app')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span data-i18n="apps_tab">Apps</span>
+            </button>
+            <button class="tab-btn" data-tab="proxy" onclick="switchTab('proxy')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <polyline points="4 17 10 11 4 5"/>
+                    <line x1="12" y1="19" x2="20" y2="19"/>
+                </svg>
+                <span data-i18n="proxy_tab">Proxy</span>
+            </button>
+        </div>
+
+        <!-- ── Apps ── -->
+        <div class="tab-content active" id="tab-app">
+            <div class="card">
                 <div class="step-header">
                     <div class="step-number">1</div>
-                    <div class="step-title">Скачай приложение</div>
+                    <div class="step-title" data-i18n="step_download_app">Download the app</div>
                 </div>
                 <div class="step-content">
-                    <a class="btn btn-secondary" href="https://apps.apple.com/us/app/sing-box-vt/id6673731168">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-                        </svg>
-                        App Store
-                    </a>
+                    <div class="config-options" id="app-list">
+                        <a class="config-option" data-platform="apple" href="https://apps.apple.com/us/app/sing-box-vt/id6673731168">
+                            <div class="config-info">
+                                <div class="config-icon blue">
+                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                                </div>
+                                <div class="config-text">
+                                    <h3>App Store</h3>
+                                    <p>iOS / Mac / Apple TV</p>
+                                </div>
+                            </div>
+                            <div class="config-arrow"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+                        </a>
+                        <a class="config-option" data-platform="windows" href="https://github.com/GUI-for-Cores/GUI.for.SingBox/releases/download/v1.11.0/GUI.for.SingBox-windows-amd64.zip">
+                            <div class="config-info">
+                                <div class="config-icon green">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                </div>
+                                <div class="config-text">
+                                    <h3>Sing-Box GUI</h3>
+                                    <p>Windows</p>
+                                </div>
+                            </div>
+                            <div class="config-arrow"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+                        </a>
+                    </div>
+                    <a class="app-link" href="https://github.com/GUI-for-Cores/GUI.for.SingBox/releases/tag/v1.11.0" style="margin-top:8px;display:inline-block" data-i18n="other_versions">Other versions (ARM, etc.)</a>
                 </div>
             </div>
 
-            <div class="step">
+            <div class="card">
                 <div class="step-header">
                     <div class="step-number">2</div>
-                    <div class="step-title">Добавь конфигурацию</div>
+                    <div class="step-title" data-i18n="step_add_config">Add configuration</div>
                 </div>
                 <div class="step-content">
                     <div class="config-options">
-                        <a class="config-option recommended" href="sing-box://import-remote-profile?url=${DEFAULT_URL}#Default">
-                            <div class="config-info">
-                                <div class="config-icon blue">
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                                    </svg>
-                                </div>
-                                <div class="config-text">
-                                    <h3>Default</h3>
-                                    <p>Стандартная защита</p>
-                                </div>
-                            </div>
-                            <span class="config-badge">Выбрать</span>
-                        </a>
-
-                        <a class="config-option" href="sing-box://import-remote-profile?url=${ADGUARD_URL}#AdGuard">
+                        <a class="config-option recommended" href="sing-box://import-remote-profile?url=${ADGUARD_URL}#AdGuard">
                             <div class="config-info">
                                 <div class="config-icon green">
                                     <svg viewBox="0 0 24 24">
@@ -546,103 +661,172 @@
                                 </div>
                                 <div class="config-text">
                                     <h3>AdGuard DNS</h3>
-                                    <p>Защита + блокировка рекламы</p>
+                                    <p data-i18n="config_adguard_desc">Protection + ad blocking</p>
+                                </div>
+                            </div>
+                            <span class="config-badge" data-i18n="config_select">Select</span>
+                        </a>
+                        <a class="config-option" href="sing-box://import-remote-profile?url=${DEFAULT_URL}#Default">
+                            <div class="config-info">
+                                <div class="config-icon blue">
+                                    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                </div>
+                                <div class="config-text">
+                                    <h3>Default</h3>
+                                    <p data-i18n="config_default_desc">Standard protection</p>
                                 </div>
                             </div>
                             <div class="config-arrow">
-                                <svg viewBox="0 0 24 24">
-                                    <path d="M9 18l6-6-6-6"/>
-                                </svg>
+                                <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
                             </div>
                         </a>
                     </div>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-header">
-                    <div class="step-number">3</div>
-                    <div class="step-title">Включи VPN</div>
-                </div>
-                <div class="step-content">
-                    <div class="step-hint">
+                    <div class="step-hint" style="margin-top:12px">
                         <svg viewBox="0 0 24 24">
                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                             <polyline points="22 4 12 14.01 9 11.01" fill="none" stroke="currentColor" stroke-width="2"/>
                         </svg>
-                        Открой приложение и нажми переключатель
+                        <span data-i18n="hint_auto_add">Tap — config will be added to the app automatically</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <details class="advanced">
-            <summary>
-                Для продвинутых
-                <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
-            </summary>
-            <div class="advanced-content">
-                <h4>Linux (один клик)</h4>
-                <div class="code-block">
-                    <code id="linux-cmd">curl -fsSL ${LINUX_SCRIPT_URL} | sudo bash</code>
-                    <button class="copy-btn" onclick="copyCmd('linux-cmd')">
-                        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" fill="currentColor"/></svg>
-                    </button>
-                </div>
-                <p class="hint">Прокси на 127.0.0.1:1080, автообновление каждые 30 сек</p>
-
-                <div class="code-block" style="margin-top: 10px;">
-                    <code id="linux-cmd-proxy">curl -fsSL ${LINUX_SCRIPT_URL} | sudo bash -s -- --system-proxy</code>
-                    <button class="copy-btn" onclick="copyCmd('linux-cmd-proxy')">
-                        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" fill="currentColor"/></svg>
-                    </button>
-                </div>
-                <p class="hint">+ системный прокси для всех приложений (apt/dnf/env)</p>
-
-                <div class="code-block" style="margin-top: 10px; opacity: 0.7;">
-                    <code id="linux-cmd-remove">curl -fsSL ${LINUX_SCRIPT_URL} | sudo bash -s -- --remove-proxy</code>
-                    <button class="copy-btn" onclick="copyCmd('linux-cmd-remove')">
-                        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" fill="currentColor"/></svg>
-                    </button>
-                </div>
-                <p class="hint">Удалить системный прокси</p>
-
-                <h4 style="margin-top: 20px;">Локальный прокси (macOS / Windows)</h4>
-                <div class="proxy-info">
-                    <div class="proxy-row">
-                        <span>SOCKS5</span>
-                        <code>127.0.0.1:1080</code>
+        <!-- ── Proxy ── -->
+        <div class="tab-content" id="tab-proxy">
+            <div class="card">
+                <div class="proxy-section">
+                    <h3>Linux</h3>
+                    <div class="cmd-group">
+                        <div class="cmd-label">
+                            <span data-i18n="linux_install">Installation</span>
+                        </div>
+                        <div class="code-block">
+                            <code id="linux-cmd">curl -fsSL ${LINUX_SCRIPT_URL} | sudo bash</code>
+                            <button class="copy-btn" onclick="copyCmd('linux-cmd')">
+                                <svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" fill="currentColor"/></svg>
+                            </button>
+                        </div>
+                        <p class="cmd-hint" data-i18n="linux_hint_proxy">Proxy on 127.0.0.1:1080, auto-updates every 30 sec</p>
                     </div>
-                    <div class="proxy-row">
-                        <span>HTTP</span>
-                        <code>127.0.0.1:1080</code>
+
+                    <div class="cmd-group">
+                        <div class="cmd-label">
+                            <span data-i18n="linux_system_proxy">+ system proxy</span>
+                            <span class="badge badge-opt" data-i18n="badge_option">option</span>
+                        </div>
+                        <div class="code-block">
+                            <code id="linux-cmd-proxy">curl -fsSL ${LINUX_SCRIPT_URL} | sudo bash -s -- --system-proxy</code>
+                            <button class="copy-btn" onclick="copyCmd('linux-cmd-proxy')">
+                                <svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" fill="currentColor"/></svg>
+                            </button>
+                        </div>
+                        <p class="cmd-hint" data-i18n="linux_hint_system">Sets up proxy for all apps (apt / dnf / env)</p>
+                    </div>
+
+                    <div class="cmd-group">
+                        <div class="cmd-label" data-i18n="linux_remove">Remove proxy</div>
+                        <div class="code-block" style="opacity:0.6">
+                            <code id="linux-cmd-remove">curl -fsSL ${LINUX_SCRIPT_URL} | sudo bash -s -- --remove-proxy</code>
+                            <button class="copy-btn" onclick="copyCmd('linux-cmd-remove')">
+                                <svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" fill="currentColor"/></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="proxy-download">
-                    <a href="proxy.json" download>
-                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                        Скачать proxy.json
-                    </a>
+
+                <div class="section-divider"></div>
+
+                <div class="proxy-section">
+                    <h3 data-i18n="proxy_addresses">Addresses</h3>
+                    <div class="proxy-info">
+                        <div class="proxy-row">
+                            <span>SOCKS5</span>
+                            <code>127.0.0.1:1080</code>
+                        </div>
+                        <div class="proxy-row">
+                            <span>HTTP</span>
+                            <code>127.0.0.1:1080</code>
+                        </div>
+                    </div>
+                    <div style="margin-top:12px">
+                        <a class="btn-download" href="proxy.json" download>
+                            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            proxy.json
+                        </a>
+                    </div>
                 </div>
             </div>
-        </details>
+        </div>
 
-        <script>
-        function copyCmd(id) {
-            const cmd = document.getElementById(id).textContent;
-            navigator.clipboard.writeText(cmd);
-            const btn = document.getElementById(id).nextElementSibling;
-            btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor"/></svg>';
-            setTimeout(() => {
-                btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" fill="currentColor"/></svg>';
-            }, 2000);
+        <div class="footer"><span data-i18n="footer_updated">Updated</span> ${UPDATE_DATE}</div>
+    </div>
+
+    <script>
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelector('[data-tab="' + tab + '"]').classList.add('active');
+        document.getElementById('tab-' + tab).classList.add('active');
+        document.querySelector('.tab-indicator').setAttribute('data-active', tab);
+    }
+
+    (function() {
+        var ru = {
+            title: 'Настройка',
+            apps_tab: 'Клиенты',
+            proxy_tab: 'Прокси',
+            step_download_app: 'Скачай приложение',
+            other_versions: 'Другие версии (ARM и др.)',
+            step_add_config: 'Добавь конфигурацию',
+            config_default_desc: 'Стандартная защита',
+            config_select: 'Выбрать',
+            config_adguard_desc: 'Защита + блокировка рекламы',
+            hint_auto_add: 'Нажми — конфиг добавится в приложение автоматически',
+            linux_install: 'Установка',
+            linux_system_proxy: '+ системный прокси',
+            badge_option: 'опция',
+            linux_hint_proxy: 'Прокси на 127.0.0.1:1080, автообновление каждые 30 сек',
+            linux_hint_system: 'Настроит прокси для всех приложений (apt / dnf / env)',
+            linux_remove: 'Удалить прокси',
+            proxy_addresses: 'Адреса',
+            footer_updated: 'Обновлено'
+        };
+        var lang = (navigator.language || '').slice(0, 2);
+        if (lang === 'ru') {
+            document.documentElement.lang = 'ru';
+            document.querySelectorAll('[data-i18n]').forEach(function(el) {
+                var t = ru[el.getAttribute('data-i18n')];
+                if (t) el.textContent = t;
+            });
         }
 
-        </script>
+        var ua = navigator.userAgent;
+        var p = /Win/.test(navigator.platform) ? 'windows'
+              : /iPhone|iPad|iPod|Mac/.test(ua) ? 'apple' : 'apple';
+        var list = document.getElementById('app-list');
+        var match = list.querySelector('[data-platform="' + p + '"]');
+        if (match) {
+            match.classList.add('recommended');
+            var badge = document.createElement('span');
+            badge.className = 'config-badge';
+            badge.setAttribute('data-i18n', 'config_select');
+            badge.textContent = lang === 'ru' ? 'Выбрать' : 'Select';
+            var arrow = match.querySelector('.config-arrow');
+            if (arrow) match.replaceChild(badge, arrow);
+            list.insertBefore(match, list.firstChild);
+        }
+    })();
 
-        <div class="footer">
-            Обновлено ${UPDATE_DATE}
-        </div>
-    </div>
+    function copyCmd(id) {
+        var el = document.getElementById(id);
+        navigator.clipboard.writeText(el.textContent);
+        var btn = el.nextElementSibling;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor"/></svg>';
+        setTimeout(function() {
+            btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" fill="currentColor"/></svg>';
+        }, 2000);
+    }
+    </script>
 </body>
 </html>
