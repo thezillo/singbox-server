@@ -70,10 +70,14 @@ fn spawn_linux(binary: &str, config: &str) -> Result<u32, AppError> {
 
 #[cfg(target_os = "windows")]
 fn spawn_windows(binary: &str, config: &str) -> Result<u32, AppError> {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
+
     let child = Command::new(binary)
         .arg("run")
         .arg("-c")
         .arg(config)
+        .creation_flags(CREATE_NO_WINDOW)
         .spawn()
         .map_err(|e| AppError::ProcessSpawnFailed(e.to_string()))?;
 
