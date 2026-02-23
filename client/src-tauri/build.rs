@@ -1,12 +1,16 @@
 fn main() {
-    // On Windows, embed a manifest requesting admin privileges.
-    // sing-box TUN requires administrator rights to create network adapters.
     #[cfg(windows)]
     {
-        let mut res = winresource::WindowsResource::new();
-        res.set_manifest(
+        let windows = tauri_build::WindowsAttributes::new().app_manifest(
             r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <dependency>
+    <dependentAssembly>
+      <assemblyIdentity type="win32" name="Microsoft.Windows.Common-Controls"
+        version="6.0.0.0" processorArchitecture="*"
+        publicKeyToken="6595b64144ccf1df" language="*" />
+    </dependentAssembly>
+  </dependency>
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
     <security>
       <requestedPrivileges>
@@ -16,8 +20,12 @@ fn main() {
   </trustInfo>
 </assembly>"#,
         );
-        res.compile().expect("failed to compile Windows resource");
+        let attrs = tauri_build::Attributes::new().windows_attributes(windows);
+        tauri_build::try_build(attrs).expect("failed to run tauri build script");
     }
 
-    tauri_build::build()
+    #[cfg(not(windows))]
+    {
+        tauri_build::build();
+    }
 }
