@@ -6,4 +6,4 @@ clients/*.json
 .claude/
 .serena/
 .playwright-mcp/
-*.png
+/*.png
