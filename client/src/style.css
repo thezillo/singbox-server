@@ -78,22 +78,14 @@ body {
 .win-btn.close { background: #ff5f57; }
 .win-btn.minimize { background: #febc2e; }
 
-.header-title {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  letter-spacing: 0.3px;
-}
-
 .header-actions {
   display: flex;
   gap: 4px;
   -webkit-app-region: no-drag;
 }
 
-/* Windows: settings left, title center, controls right (close rightmost) */
+/* Windows: settings left, controls right (close rightmost) */
 .header.platform-win .header-actions { order: 1; margin-right: auto; }
-.header.platform-win .header-title { order: 2; }
 .header.platform-win .window-controls { order: 3; flex-direction: row-reverse; }
 
 .icon-btn {
