@@ -10,13 +10,25 @@ use settings::{AppState, ConnectionStatus};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
-    Manager, RunEvent,
+    Emitter, Manager, RunEvent,
 };
+use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_store::StoreExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let app = tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+
+    // single-instance MUST come before deep-link on desktop
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|_app, _argv, _cwd| {
+            log::info!("single-instance: second launch blocked");
+        }));
+    }
+
+    let app = builder
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .manage(AppState::default())
@@ -42,6 +54,27 @@ pub fn run() {
             if cfg!(target_os = "windows") {
                 let _ = proxy_manager::disable_system_proxy();
             }
+
+            // Deep link: handle URL that launched this instance
+            if let Ok(Some(urls)) = app.deep_link().get_current() {
+                for url in &urls {
+                    log::info!("App launched via deep link: {url}");
+                    handle_deep_link(app.handle(), url.as_str());
+                }
+            }
+
+            // Deep link: handle URLs arriving while app is running
+            let app_handle = app.handle().clone();
+            app.deep_link().on_open_url(move |event| {
+                for url in event.urls() {
+                    log::info!("Deep link received: {url}");
+                    handle_deep_link(&app_handle, url.as_str());
+                }
+            });
+
+            // Register protocol in dev mode (installer does it in production)
+            #[cfg(debug_assertions)]
+            app.deep_link().register("sing-box").ok();
 
             // Build system tray
             let show_item = MenuItem::with_id(app, "show", "Show Window", true, None::<&str>)?;
@@ -106,6 +139,57 @@ pub fn run() {
             cleanup_before_exit(app);
         }
     });
+}
+
+/// Parse a sing-box:// deep link and save the profile URL, then trigger connect.
+///
+/// Format: sing-box://import-remote-profile?url=<encoded-url>#<label>
+fn handle_deep_link(app: &tauri::AppHandle, raw_url: &str) {
+    // Show window
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.set_focus();
+        let _ = window.unminimize();
+    }
+
+    let parsed = match url::Url::parse(raw_url) {
+        Ok(u) => u,
+        Err(e) => {
+            log::warn!("Deep link parse error: {e}");
+            return;
+        }
+    };
+
+    if parsed.host_str() != Some("import-remote-profile") {
+        log::warn!("Unknown deep link action: {raw_url}");
+        return;
+    }
+
+    let profile_url = match parsed.query_pairs().find(|(k, _)| k == "url").map(|(_, v)| v.into_owned()) {
+        Some(url) if !url.is_empty() => url,
+        _ => {
+            log::warn!("Deep link missing url parameter");
+            return;
+        }
+    };
+
+    log::info!("Importing profile: {profile_url}");
+
+    // Save the config URL
+    let state = app.state::<AppState>();
+    {
+        let mut settings = state.settings.lock().unwrap();
+        settings.config_url = profile_url.clone();
+    }
+
+    // Persist to store
+    if let Ok(store) = app.store("settings.json") {
+        store.set("config_url", serde_json::json!(profile_url));
+        let _ = store.save();
+    }
+
+    // Emit event to frontend to update UI and auto-connect
+    let _ = app.emit("deep-link-import", serde_json::json!({ "url": profile_url }));
 }
 
 /// Gracefully disconnect sing-box and disable system proxy before exit.

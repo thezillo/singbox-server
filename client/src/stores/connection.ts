@@ -86,6 +86,15 @@ export const useConnectionStore = defineStore("connection", () => {
     tauriListen<TrafficData>("traffic-update", (event) => {
       traffic.value = event.payload;
     });
+
+    // Deep link: profile imported from sing-box:// URL
+    tauriListen<{ url: string }>("deep-link-import", async (event) => {
+      settings.value.config_url = event.payload.url;
+      // Auto-connect with the imported profile
+      if (status.value === "Disconnected") {
+        await connect();
+      }
+    });
   }
 
   async function connect() {
