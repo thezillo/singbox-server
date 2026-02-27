@@ -13,11 +13,12 @@ fn http_client() -> Result<reqwest::Client, AppError> {
 
 /// Download config JSON from the server URL, inject clash_api, and save to disk.
 /// On Windows, `proxy_port > 0` replaces TUN inbound with a mixed proxy on that port.
+/// Returns `(config_path, api_port)`.
 pub async fn download_and_prepare_config(
     config_url: &str,
     app_data_dir: &Path,
     proxy_port: u16,
-) -> Result<PathBuf, AppError> {
+) -> Result<(PathBuf, u16), AppError> {
     if config_url.is_empty() {
         return Err(AppError::ConfigUrlNotSet);
     }
@@ -36,7 +37,8 @@ pub async fn download_and_prepare_config(
     let mut config: serde_json::Value =
         serde_json::from_str(&body).map_err(|e| AppError::ConfigParseFailed(e.to_string()))?;
 
-    // Inject clash_api configuration for traffic monitoring
+    // Inject clash_api configuration for traffic monitoring (random port to avoid conflicts)
+    let api_port = find_free_port()?;
     let experimental = config
         .as_object_mut()
         .ok_or_else(|| AppError::ConfigParseFailed("config is not an object".into()))?
@@ -52,7 +54,7 @@ pub async fn download_and_prepare_config(
     if let Some(obj) = clash_api.as_object_mut() {
         obj.insert(
             "external_controller".into(),
-            serde_json::json!("127.0.0.1:9090"),
+            serde_json::json!(format!("127.0.0.1:{api_port}")),
         );
     }
 
@@ -67,7 +69,7 @@ pub async fn download_and_prepare_config(
         .map_err(|e| AppError::ConfigParseFailed(format!("Failed to serialize config: {e}")))?;
     std::fs::write(&config_path, config_json)?;
 
-    Ok(config_path)
+    Ok((config_path, api_port))
 }
 
 /// Find a free TCP port by letting the OS assign one.

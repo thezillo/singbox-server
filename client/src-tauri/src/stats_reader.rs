@@ -16,12 +16,13 @@ pub async fn start_traffic_stream(app_handle: AppHandle) {
     // Brief delay to let sing-box start up and open the clash API port
     tokio::time::sleep(std::time::Duration::from_secs(2)).await;
 
-    let url = "ws://127.0.0.1:9090/traffic";
+    let api_port = *state.api_port.lock().unwrap();
+    let url = format!("ws://127.0.0.1:{api_port}/traffic");
 
     // Retry connection a few times (sing-box may still be starting)
     let mut ws_stream = None;
     for attempt in 0..10 {
-        match tokio_tungstenite::connect_async(url).await {
+        match tokio_tungstenite::connect_async(&url).await {
             Ok((stream, _)) => {
                 ws_stream = Some(stream);
                 break;

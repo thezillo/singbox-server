@@ -47,7 +47,7 @@ pub async fn connect(app: AppHandle) -> Result<(), AppError> {
     };
 
     // Download config
-    let config_path = match config_manager::download_and_prepare_config(&config_url, &data_dir, proxy_port).await {
+    let (config_path, api_port) = match config_manager::download_and_prepare_config(&config_url, &data_dir, proxy_port).await {
         Ok(p) => p,
         Err(e) => {
             let mut status = state.status.lock().unwrap();
@@ -56,6 +56,7 @@ pub async fn connect(app: AppHandle) -> Result<(), AppError> {
             return Err(e);
         }
     };
+    *state.api_port.lock().unwrap() = api_port;
 
     // Update last_update timestamp
     {
@@ -228,7 +229,8 @@ pub async fn update_config(app: AppHandle) -> Result<String, AppError> {
     };
 
     let proxy_port = *state.proxy_port.lock().unwrap();
-    config_manager::download_and_prepare_config(&config_url, &data_dir, proxy_port).await?;
+    let (_, api_port) = config_manager::download_and_prepare_config(&config_url, &data_dir, proxy_port).await?;
+    *state.api_port.lock().unwrap() = api_port;
 
     let now = chrono_now();
     {
