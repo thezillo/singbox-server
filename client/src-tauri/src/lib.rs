@@ -10,13 +10,13 @@ use settings::{AppState, ConnectionStatus};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
-    Manager,
+    Manager, RunEvent,
 };
 use tauri_plugin_store::StoreExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .manage(AppState::default())
@@ -38,13 +38,22 @@ pub fn run() {
                 }
             }
 
+            // On startup: clear stale proxy if sing-box isn't running
+            if cfg!(target_os = "windows") {
+                let _ = proxy_manager::disable_system_proxy();
+            }
+
             // Build system tray
             let show_item = MenuItem::with_id(app, "show", "Show Window", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
 
+            let icon = app.default_window_icon()
+                .ok_or("no default window icon configured")?
+                .clone();
+
             let _tray = TrayIconBuilder::new()
-                .icon(app.default_window_icon().unwrap().clone())
+                .icon(icon)
                 .menu(&menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(move |app, event| match event.id.as_ref() {
@@ -89,8 +98,14 @@ pub fn run() {
             commands::save_settings,
             commands::get_singbox_path,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|app, event| {
+        if let RunEvent::Exit = event {
+            cleanup_before_exit(app);
+        }
+    });
 }
 
 /// Gracefully disconnect sing-box and disable system proxy before exit.
@@ -115,11 +130,15 @@ fn cleanup_before_exit(app: &tauri::AppHandle) {
         process_id.take()
     };
     if let Some(pid) = pid {
-        let _ = process_manager::kill_singbox(pid);
+        if let Err(e) = process_manager::kill_singbox(pid) {
+            log::error!("Failed to kill sing-box (PID {pid}) during cleanup: {e}");
+        }
     }
 
     // Disable system proxy on Windows
     if cfg!(target_os = "windows") {
-        let _ = proxy_manager::disable_system_proxy();
+        if let Err(e) = proxy_manager::disable_system_proxy() {
+            log::error!("Failed to disable system proxy during cleanup: {e}");
+        }
     }
 }

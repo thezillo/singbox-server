@@ -97,7 +97,18 @@ pub async fn connect(app: AppHandle) -> Result<(), AppError> {
         }
 
         if let Err(e) = proxy_manager::enable_system_proxy(config_manager::PROXY_PORT) {
-            log::warn!("Failed to set system proxy: {e}");
+            // Proxy is essential — without it traffic bypasses VPN entirely
+            let pid = {
+                let mut process_id = state.process_id.lock().unwrap();
+                process_id.take()
+            };
+            if let Some(pid) = pid {
+                let _ = process_manager::kill_singbox(pid);
+            }
+            let mut status = state.status.lock().unwrap();
+            *status = ConnectionStatus::Disconnected;
+            let _ = app.emit("status-change", "Disconnected");
+            return Err(AppError::IoError(format!("Failed to set system proxy: {e}")));
         }
     }
 
@@ -136,16 +147,21 @@ pub async fn disconnect(app: AppHandle) -> Result<(), AppError> {
         process_id.take()
     };
 
-    if let Some(pid) = pid {
-        process_manager::kill_singbox(pid)?;
-    }
+    let kill_result = if let Some(pid) = pid {
+        process_manager::kill_singbox(pid)
+    } else {
+        Ok(())
+    };
 
-    // On Windows: restore system proxy settings
+    // Always disable system proxy, even if kill failed — otherwise user loses internet
     if cfg!(target_os = "windows") {
         if let Err(e) = proxy_manager::disable_system_proxy() {
-            log::warn!("Failed to unset system proxy: {e}");
+            log::error!("Failed to unset system proxy: {e}");
         }
     }
+
+    // Propagate kill error after proxy is disabled
+    kill_result?;
 
     // Reset traffic
     {

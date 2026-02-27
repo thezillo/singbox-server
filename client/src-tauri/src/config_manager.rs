@@ -61,7 +61,9 @@ pub async fn download_and_prepare_config(
 
     let config_path = app_data_dir.join("config.json");
     std::fs::create_dir_all(app_data_dir)?;
-    std::fs::write(&config_path, serde_json::to_string_pretty(&config).unwrap())?;
+    let config_json = serde_json::to_string_pretty(&config)
+        .map_err(|e| AppError::ConfigParseFailed(format!("Failed to serialize config: {e}")))?;
+    std::fs::write(&config_path, config_json)?;
 
     Ok(config_path)
 }
