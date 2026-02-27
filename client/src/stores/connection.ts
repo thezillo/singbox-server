@@ -93,11 +93,24 @@ export const useConnectionStore = defineStore("connection", () => {
     error.value = null;
 
     if (!isTauri) {
-      // Browser mock: simulate connect flow
+      // Browser mock: simulate connect flow with live traffic
       status.value = "Connecting";
       setTimeout(() => {
         status.value = "Connected";
-        traffic.value = { up_speed: 12400, down_speed: 458700, up_total: 1024000, down_total: 52428800 };
+        const mockInterval = setInterval(() => {
+          if (status.value !== "Connected") {
+            clearInterval(mockInterval);
+            return;
+          }
+          const up = Math.floor(Math.random() * 50000 + 2000);
+          const down = Math.floor(Math.random() * 500000 + 10000);
+          traffic.value = {
+            up_speed: up,
+            down_speed: down,
+            up_total: traffic.value.up_total + up,
+            down_total: traffic.value.down_total + down,
+          };
+        }, 1000);
       }, 1500);
       return;
     }

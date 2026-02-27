@@ -34,7 +34,6 @@ const statusText = computed(() => {
       </svg>
     </div>
     <div class="logo-title">Singbox</div>
-    <div class="logo-subtitle">VPN Client</div>
     <div class="status-pill" :class="statusClass">
       <span class="dot"></span>
       {{ statusText }}

@@ -91,10 +91,10 @@ body {
   -webkit-app-region: no-drag;
 }
 
-/* Windows: window controls on the right */
-.header.platform-win .window-controls { order: 3; }
-.header.platform-win .header-title { order: 1; }
-.header.platform-win .header-actions { order: 2; margin-left: auto; margin-right: 8px; }
+/* Windows: settings left, title center, controls right (close rightmost) */
+.header.platform-win .header-actions { order: 1; margin-right: auto; }
+.header.platform-win .header-title { order: 2; }
+.header.platform-win .window-controls { order: 3; flex-direction: row-reverse; }
 
 .icon-btn {
   background: none;
@@ -308,59 +308,7 @@ body {
   50% { box-shadow: 0 0 40px var(--amber-glow), 0 0 60px rgba(240, 160, 48, 0.1); }
 }
 
-/* ─── Traffic stats ───────────────────────── */
-.traffic-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  width: 100%;
-  max-width: 320px;
-}
-
-.stat-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius);
-  padding: 16px;
-  text-align: center;
-  transition: background 0.2s;
-}
-
-.stat-card:hover {
-  background: var(--card-bg-hover);
-}
-
-.stat-icon {
-  font-size: 14px;
-  margin-bottom: 8px;
-  display: block;
-}
-
-.stat-icon.up { color: var(--purple); }
-.stat-icon.down { color: var(--accent); }
-
-.stat-speed {
-  font-size: 20px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.5px;
-  line-height: 1.2;
-}
-
-.stat-total {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 4px;
-  font-variant-numeric: tabular-nums;
-}
-
-.stat-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-top: 6px;
-}
+/* ─── Traffic stats (see TrafficStats.vue scoped styles) ── */
 
 /* ─── Bottom section ──────────────────────── */
 .bottom-section {

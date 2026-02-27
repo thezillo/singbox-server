@@ -19,8 +19,8 @@ onMounted(() => {
   <SettingsPanel />
   <div class="main-content">
     <ConnectionToggle />
-    <TrafficStats />
   </div>
+  <TrafficStats />
   <div class="bottom-section">
     <div v-if="store.error" class="error-bar">{{ store.error }}</div>
     <ConfigInfo />

@@ -124,20 +124,6 @@ pub async fn connect(app: AppHandle) -> Result<(), AppError> {
             return Err(AppError::ProcessSpawnFailed(msg));
         }
 
-        if let Err(e) = proxy_manager::enable_system_proxy(proxy_port) {
-            // Proxy is essential — without it traffic bypasses VPN entirely
-            let pid = {
-                let mut process_id = state.process_id.lock().unwrap();
-                process_id.take()
-            };
-            if let Some(pid) = pid {
-                let _ = process_manager::kill_singbox(pid);
-            }
-            let mut status = state.status.lock().unwrap();
-            *status = ConnectionStatus::Disconnected;
-            let _ = app.emit("status-change", "Disconnected");
-            return Err(AppError::IoError(format!("Failed to set system proxy: {e}")));
-        }
     }
 
     // Set connected

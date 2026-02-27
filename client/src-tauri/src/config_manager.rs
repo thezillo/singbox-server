@@ -95,7 +95,8 @@ fn replace_tun_with_proxy(config: &mut serde_json::Value, port: u16) {
                     "type": "mixed",
                     "tag": "mixed-in",
                     "listen": "127.0.0.1",
-                    "listen_port": port
+                    "listen_port": port,
+                    "set_system_proxy": true
                 });
             }
         }
