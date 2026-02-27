@@ -2,6 +2,7 @@ mod commands;
 mod config_manager;
 mod error;
 mod process_manager;
+mod proxy_manager;
 mod settings;
 mod stats_reader;
 

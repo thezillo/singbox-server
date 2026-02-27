@@ -54,11 +54,36 @@ pub async fn download_and_prepare_config(
         );
     }
 
+    // On Windows: replace TUN inbound with mixed proxy (no admin required)
+    if cfg!(target_os = "windows") {
+        replace_tun_with_proxy(&mut config);
+    }
+
     let config_path = app_data_dir.join("config.json");
     std::fs::create_dir_all(app_data_dir)?;
     std::fs::write(&config_path, serde_json::to_string_pretty(&config).unwrap())?;
 
     Ok(config_path)
+}
+
+/// Port for the local mixed proxy on Windows.
+pub const PROXY_PORT: u16 = 1080;
+
+/// Replace TUN inbound with a mixed (HTTP+SOCKS5) proxy inbound.
+/// This allows sing-box to run without administrator privileges on Windows.
+fn replace_tun_with_proxy(config: &mut serde_json::Value) {
+    if let Some(inbounds) = config.get_mut("inbounds").and_then(|v| v.as_array_mut()) {
+        for inbound in inbounds.iter_mut() {
+            if inbound.get("type").and_then(|v| v.as_str()) == Some("tun") {
+                *inbound = serde_json::json!({
+                    "type": "mixed",
+                    "tag": "mixed-in",
+                    "listen": "127.0.0.1",
+                    "listen_port": PROXY_PORT
+                });
+            }
+        }
+    }
 }
 
 /// Return the expected path of the sing-box binary.

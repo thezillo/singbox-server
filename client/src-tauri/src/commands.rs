@@ -1,5 +1,5 @@
 use crate::{
-    config_manager, error::AppError, process_manager, settings::*, stats_reader,
+    config_manager, error::AppError, process_manager, proxy_manager, settings::*, stats_reader,
 };
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_store::StoreExt;
@@ -79,6 +79,13 @@ pub async fn connect(app: AppHandle) -> Result<(), AppError> {
         }
     }
 
+    // On Windows: set system proxy to route traffic through sing-box
+    if cfg!(target_os = "windows") {
+        if let Err(e) = proxy_manager::enable_system_proxy(config_manager::PROXY_PORT) {
+            log::warn!("Failed to set system proxy: {e}");
+        }
+    }
+
     // Set connected
     {
         let mut status = state.status.lock().unwrap();
@@ -116,6 +123,13 @@ pub async fn disconnect(app: AppHandle) -> Result<(), AppError> {
 
     if let Some(pid) = pid {
         process_manager::kill_singbox(pid)?;
+    }
+
+    // On Windows: restore system proxy settings
+    if cfg!(target_os = "windows") {
+        if let Err(e) = proxy_manager::disable_system_proxy() {
+            log::warn!("Failed to unset system proxy: {e}");
+        }
     }
 
     // Reset traffic
