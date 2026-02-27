@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Clone)]
 pub enum AppError {
     ConfigUrlNotSet,
     ConfigDownloadFailed(String),
@@ -24,6 +24,12 @@ impl std::fmt::Display for AppError {
             Self::ProcessNotRunning => write!(f, "sing-box is not running"),
             Self::IoError(e) => write!(f, "IO error: {e}"),
         }
+    }
+}
+
+impl Serialize for AppError {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.to_string())
     }
 }
 
