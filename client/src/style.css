@@ -91,6 +91,11 @@ body {
   -webkit-app-region: no-drag;
 }
 
+/* Windows: window controls on the right */
+.header.platform-win .window-controls { order: 3; }
+.header.platform-win .header-title { order: 1; }
+.header.platform-win .header-actions { order: 2; margin-left: auto; margin-right: 8px; }
+
 .icon-btn {
   background: none;
   border: none;

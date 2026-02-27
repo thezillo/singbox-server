@@ -3,6 +3,7 @@ import { useConnectionStore } from "../stores/connection";
 
 const store = useConnectionStore();
 const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+const isWindows = navigator.platform.startsWith("Win");
 
 async function closeWindow() {
   if (!isTauri) return;
@@ -18,7 +19,7 @@ async function minimizeWindow() {
 </script>
 
 <template>
-  <header class="header">
+  <header class="header" :class="{ 'platform-win': isWindows }">
     <div class="window-controls">
       <button class="win-btn close" @click="closeWindow()" />
       <button class="win-btn minimize" @click="minimizeWindow()" />
