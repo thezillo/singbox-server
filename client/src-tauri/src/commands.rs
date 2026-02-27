@@ -79,8 +79,23 @@ pub async fn connect(app: AppHandle) -> Result<(), AppError> {
         }
     }
 
-    // On Windows: set system proxy to route traffic through sing-box
+    // On Windows: wait for sing-box to bind the proxy port, then set system proxy
     if cfg!(target_os = "windows") {
+        if let Err(e) = wait_for_port(config_manager::PROXY_PORT, 5).await {
+            // sing-box failed to start — clean up and abort
+            let pid = {
+                let mut process_id = state.process_id.lock().unwrap();
+                process_id.take()
+            };
+            if let Some(pid) = pid {
+                let _ = process_manager::kill_singbox(pid);
+            }
+            let mut status = state.status.lock().unwrap();
+            *status = ConnectionStatus::Disconnected;
+            let _ = app.emit("status-change", "Disconnected");
+            return Err(e);
+        }
+
         if let Err(e) = proxy_manager::enable_system_proxy(config_manager::PROXY_PORT) {
             log::warn!("Failed to set system proxy: {e}");
         }
@@ -216,6 +231,26 @@ pub fn get_singbox_path(app: AppHandle) -> Result<String, AppError> {
     let data_dir = app_data_dir(&app)?;
     let path = config_manager::singbox_binary_path(&data_dir);
     Ok(path.to_string_lossy().to_string())
+}
+
+/// Wait until a TCP port is accepting connections, or timeout.
+async fn wait_for_port(port: u16, timeout_secs: u64) -> Result<(), AppError> {
+    use std::net::{SocketAddr, TcpStream};
+    use std::time::{Duration, Instant};
+
+    let addr: SocketAddr = ([127, 0, 0, 1], port).into();
+    let deadline = Instant::now() + Duration::from_secs(timeout_secs);
+
+    while Instant::now() < deadline {
+        if TcpStream::connect_timeout(&addr, Duration::from_millis(200)).is_ok() {
+            return Ok(());
+        }
+        tokio::time::sleep(Duration::from_millis(250)).await;
+    }
+
+    Err(AppError::ProcessSpawnFailed(format!(
+        "sing-box did not start listening on port {port} within {timeout_secs}s"
+    )))
 }
 
 /// Simple ISO timestamp without pulling in chrono crate.

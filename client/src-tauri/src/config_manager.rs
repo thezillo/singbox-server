@@ -72,6 +72,7 @@ pub const PROXY_PORT: u16 = 1080;
 /// Replace TUN inbound with a mixed (HTTP+SOCKS5) proxy inbound.
 /// This allows sing-box to run without administrator privileges on Windows.
 fn replace_tun_with_proxy(config: &mut serde_json::Value) {
+    // Replace TUN inbound with mixed proxy inbound
     if let Some(inbounds) = config.get_mut("inbounds").and_then(|v| v.as_array_mut()) {
         for inbound in inbounds.iter_mut() {
             if inbound.get("type").and_then(|v| v.as_str()) == Some("tun") {
@@ -83,6 +84,16 @@ fn replace_tun_with_proxy(config: &mut serde_json::Value) {
                 });
             }
         }
+    }
+
+    // Remove hijack-dns route rule (only works with TUN, not mixed proxy)
+    if let Some(rules) = config
+        .pointer_mut("/route/rules")
+        .and_then(|v| v.as_array_mut())
+    {
+        rules.retain(|rule| {
+            rule.get("action").and_then(|a| a.as_str()) != Some("hijack-dns")
+        });
     }
 }
 

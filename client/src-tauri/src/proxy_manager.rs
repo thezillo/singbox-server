@@ -3,7 +3,9 @@ use crate::error::AppError;
 /// Enable the Windows system proxy via registry (HKCU — no admin required).
 #[cfg(target_os = "windows")]
 pub fn enable_system_proxy(port: u16) -> Result<(), AppError> {
+    use std::os::windows::process::CommandExt;
     use std::process::Command;
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
 
     let proxy_server = format!("127.0.0.1:{port}");
     let bypass = "localhost;127.*;10.*;192.168.*;<local>";
@@ -13,7 +15,7 @@ pub fn enable_system_proxy(port: u16) -> Result<(), AppError> {
         ("ProxyServer", "REG_SZ", proxy_server.as_str()),
         ("ProxyOverride", "REG_SZ", bypass),
     ] {
-        Command::new("reg")
+        let output = Command::new("reg")
             .args([
                 "add",
                 r"HKCU\Software\Microsoft\Windows\Internet Settings",
@@ -22,8 +24,16 @@ pub fn enable_system_proxy(port: u16) -> Result<(), AppError> {
                 "/d", value,
                 "/f",
             ])
+            .creation_flags(CREATE_NO_WINDOW)
             .output()
             .map_err(|e| AppError::IoError(e.to_string()))?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(AppError::IoError(format!(
+                "Failed to set registry value {name}: {stderr}"
+            )));
+        }
     }
 
     Ok(())
@@ -32,9 +42,11 @@ pub fn enable_system_proxy(port: u16) -> Result<(), AppError> {
 /// Disable the Windows system proxy via registry.
 #[cfg(target_os = "windows")]
 pub fn disable_system_proxy() -> Result<(), AppError> {
+    use std::os::windows::process::CommandExt;
     use std::process::Command;
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
 
-    Command::new("reg")
+    let output = Command::new("reg")
         .args([
             "add",
             r"HKCU\Software\Microsoft\Windows\Internet Settings",
@@ -43,8 +55,16 @@ pub fn disable_system_proxy() -> Result<(), AppError> {
             "/d", "0",
             "/f",
         ])
+        .creation_flags(CREATE_NO_WINDOW)
         .output()
         .map_err(|e| AppError::IoError(e.to_string()))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(AppError::IoError(format!(
+            "Failed to disable system proxy: {stderr}"
+        )));
+    }
 
     Ok(())
 }

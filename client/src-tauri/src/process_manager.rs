@@ -119,8 +119,12 @@ pub fn kill_singbox(pid: u32) -> Result<(), AppError> {
 
     #[cfg(target_os = "windows")]
     {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+
         Command::new("taskkill")
             .args(["/F", "/PID", &pid.to_string()])
+            .creation_flags(CREATE_NO_WINDOW)
             .output()
             .map_err(|e| AppError::IoError(e.to_string()))?;
     }
@@ -137,8 +141,12 @@ pub fn is_process_running(pid: u32) -> bool {
     }
     #[cfg(windows)]
     {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+
         Command::new("tasklist")
             .args(["/FI", &format!("PID eq {pid}"), "/NH"])
+            .creation_flags(CREATE_NO_WINDOW)
             .output()
             .map(|o| String::from_utf8_lossy(&o.stdout).contains(&pid.to_string()))
             .unwrap_or(false)
