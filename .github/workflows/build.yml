@@ -73,25 +73,6 @@ jobs:
           projectPath: client
           args: ${{ matrix.args }}
 
-      # Sign Windows binaries with Azure Trusted Signing
-      - name: Sign Windows executables
-        if: matrix.platform == 'windows-latest' && env.AZURE_CLIENT_ID != ''
-        uses: azure/trusted-signing-action@v0.5.0
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        with:
-          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          endpoint: ${{ secrets.AZURE_SIGNING_ENDPOINT }}
-          trusted-signing-account-name: ${{ secrets.AZURE_SIGNING_ACCOUNT }}
-          certificate-profile-name: ${{ secrets.AZURE_SIGNING_PROFILE }}
-          files-folder: client/src-tauri/target/release/bundle
-          files-folder-filter: exe,msi
-          file-digest: SHA256
-          timestamp-rfc3161: http://timestamp.acs.microsoft.com
-          timestamp-digest: SHA256
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
