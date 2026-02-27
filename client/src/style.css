@@ -139,12 +139,6 @@ body {
   letter-spacing: -0.3px;
 }
 
-.logo-subtitle {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 3px;
-}
-
 /* ─── Status pill ─────────────────────────── */
 .status-pill {
   display: inline-flex;

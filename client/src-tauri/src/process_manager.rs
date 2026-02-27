@@ -29,8 +29,10 @@ pub fn spawn_singbox(binary_path: &Path, config_path: &Path, log_path: &Path) ->
 fn spawn_macos(binary: &str, config: &str) -> Result<u32, AppError> {
     // Use osascript to get admin privileges with native macOS password prompt.
     // The script runs sing-box in background and prints its PID.
+    let escaped_binary = binary.replace('\\', "\\\\").replace('"', "\\\"");
+    let escaped_config = config.replace('\\', "\\\\").replace('"', "\\\"");
     let script = format!(
-        r#"do shell script "{binary} run -c {config} & echo $!" with administrator privileges"#,
+        r#"do shell script "{escaped_binary} run -c {escaped_config} & echo $!" with administrator privileges"#,
     );
 
     let output = Command::new("osascript")
@@ -141,25 +143,4 @@ pub fn kill_singbox(pid: u32) -> Result<(), AppError> {
     }
 
     Ok(())
-}
-
-/// Check if a process with the given PID is still running.
-pub fn is_process_running(pid: u32) -> bool {
-    #[cfg(unix)]
-    {
-        // Signal 0 checks existence without actually sending a signal
-        unsafe { libc::kill(pid as i32, 0) == 0 }
-    }
-    #[cfg(windows)]
-    {
-        use std::os::windows::process::CommandExt;
-        const CREATE_NO_WINDOW: u32 = 0x08000000;
-
-        Command::new("tasklist")
-            .args(["/FI", &format!("PID eq {pid}"), "/NH"])
-            .creation_flags(CREATE_NO_WINDOW)
-            .output()
-            .map(|o| String::from_utf8_lossy(&o.stdout).contains(&pid.to_string()))
-            .unwrap_or(false)
-    }
 }

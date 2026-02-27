@@ -5,10 +5,6 @@
   "permissions": [
     "core:default",
     "shell:allow-open",
-    "shell:allow-execute",
-    "shell:allow-spawn",
-    "shell:allow-stdin-write",
-    "shell:allow-kill",
     "store:allow-get",
     "store:allow-set",
     "store:allow-save",

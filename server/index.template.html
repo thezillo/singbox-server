@@ -615,7 +615,7 @@
                 </div>
                 <div class="step-content">
                     <div class="config-options" id="app-list">
-                        <a class="config-option" data-platform="apple" href="https://apps.apple.com/us/app/sing-box-vt/id6673731168">
+                        <a class="config-option" data-platform="apple" href="https://apps.apple.com/us/app/sing-box-vt/id6673731168" target="_blank" rel="noopener">
                             <div class="config-info">
                                 <div class="config-icon blue">
                                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
@@ -627,20 +627,19 @@
                             </div>
                             <div class="config-arrow"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
                         </a>
-                        <a class="config-option" data-platform="windows" href="https://github.com/GUI-for-Cores/GUI.for.SingBox/releases/download/v1.11.0/GUI.for.SingBox-windows-amd64.zip">
+                        <a class="config-option" data-platform="windows" href="${WINDOWS_DOWNLOAD_URL}" target="_blank" rel="noopener">
                             <div class="config-info">
                                 <div class="config-icon green">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 12V6.75l6-1.32v6.48L3 12zm6.02.09l8.5.09V5.15l-8.5 1.09v5.85zM3 13l6 .09v6.81l-6-1.15V13zm6.02.09l8.5.09v7.41l-8.5-1.64v-5.86z"/></svg>
                                 </div>
                                 <div class="config-text">
-                                    <h3>Sing-Box GUI</h3>
+                                    <h3 data-i18n="download_label">Download</h3>
                                     <p>Windows</p>
                                 </div>
                             </div>
                             <div class="config-arrow"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
                         </a>
                     </div>
-                    <a class="app-link" href="https://github.com/GUI-for-Cores/GUI.for.SingBox/releases/tag/v1.11.0" style="margin-top:8px;display:inline-block" data-i18n="other_versions">Other versions (ARM, etc.)</a>
                 </div>
             </div>
 
@@ -777,7 +776,8 @@
             apps_tab: 'Клиенты',
             proxy_tab: 'Прокси',
             step_download_app: 'Скачай приложение',
-            other_versions: 'Другие версии (ARM и др.)',
+            download_btn: 'Скачать',
+            download_label: 'Скачать',
             step_add_config: 'Добавь конфигурацию',
             config_default_desc: 'Стандартная защита',
             config_select: 'Выбрать',

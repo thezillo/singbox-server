@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicktomlin/tauri-settings-schema/master/v2.json",
-  "productName": "Singbox",
+  "productName": "singbox",
   "version": "0.1.0",
   "identifier": "com.singbox.client",
   "build": {
@@ -13,7 +13,7 @@
     "withGlobalTauri": false,
     "windows": [
       {
-        "title": "Singbox",
+        "title": "singbox",
         "width": 400,
         "height": 600,
         "resizable": false,

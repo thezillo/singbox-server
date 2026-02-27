@@ -9,6 +9,9 @@ on:
     paths: ['client/**', '.github/workflows/build.yml']
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -54,3 +57,17 @@ jobs:
           path: |
             client/src-tauri/target/**/release/bundle/nsis/*.exe
           if-no-files-found: ignore
+
+      - name: Publish release
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          EXE=$(find client/src-tauri/target -name "*.exe" -path "*/nsis/*" | head -1)
+          if [ -z "$EXE" ]; then echo "No NSIS exe found"; exit 1; fi
+          cp "$EXE" singbox-setup.exe
+          gh release delete latest --yes --cleanup-tag 2>/dev/null || true
+          gh release create latest singbox-setup.exe \
+            --title "singbox" \
+            --notes "Windows desktop client"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -5,10 +5,8 @@ pub enum AppError {
     ConfigUrlNotSet,
     ConfigDownloadFailed(String),
     ConfigParseFailed(String),
-    BinaryNotFound,
     BinaryDownloadFailed(String),
     ProcessSpawnFailed(String),
-    ProcessNotRunning,
     IoError(String),
 }
 
@@ -18,10 +16,8 @@ impl std::fmt::Display for AppError {
             Self::ConfigUrlNotSet => write!(f, "Config URL is not set"),
             Self::ConfigDownloadFailed(e) => write!(f, "Failed to download config: {e}"),
             Self::ConfigParseFailed(e) => write!(f, "Failed to parse config: {e}"),
-            Self::BinaryNotFound => write!(f, "sing-box binary not found"),
             Self::BinaryDownloadFailed(e) => write!(f, "Failed to download sing-box: {e}"),
             Self::ProcessSpawnFailed(e) => write!(f, "Failed to start sing-box: {e}"),
-            Self::ProcessNotRunning => write!(f, "sing-box is not running"),
             Self::IoError(e) => write!(f, "IO error: {e}"),
         }
     }

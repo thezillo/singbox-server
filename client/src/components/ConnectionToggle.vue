@@ -33,7 +33,7 @@ const statusText = computed(() => {
         <polyline points="9 12 11 14 15 10" v-if="store.isConnected"/>
       </svg>
     </div>
-    <div class="logo-title">Singbox</div>
+    <div class="logo-title">singbox</div>
     <div class="status-pill" :class="statusClass">
       <span class="dot"></span>
       {{ statusText }}

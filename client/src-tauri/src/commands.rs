@@ -14,17 +14,12 @@ fn app_data_dir(app: &AppHandle) -> Result<std::path::PathBuf, AppError> {
 pub async fn connect(app: AppHandle) -> Result<(), AppError> {
     let state = app.state::<AppState>();
 
-    // Check we're not already connected/connecting
+    // Atomically check and set status to Connecting
     {
-        let status = state.status.lock().unwrap();
+        let mut status = state.status.lock().unwrap();
         if *status == ConnectionStatus::Connected || *status == ConnectionStatus::Connecting {
             return Ok(());
         }
-    }
-
-    // Set connecting
-    {
-        let mut status = state.status.lock().unwrap();
         *status = ConnectionStatus::Connecting;
     }
     let _ = app.emit("status-change", "Connecting");
@@ -215,8 +210,8 @@ pub async fn update_config(app: AppHandle) -> Result<String, AppError> {
     };
 
     let proxy_port = *state.proxy_port.lock().unwrap();
-    let (_, api_port) = config_manager::download_and_prepare_config(&config_url, &data_dir, proxy_port).await?;
-    *state.api_port.lock().unwrap() = api_port;
+    // Don't change api_port — sing-box isn't restarted, old process still uses old port
+    let (_, _api_port) = config_manager::download_and_prepare_config(&config_url, &data_dir, proxy_port).await?;
 
     let now = chrono_now();
     {

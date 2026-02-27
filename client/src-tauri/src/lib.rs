@@ -173,7 +173,7 @@ fn handle_deep_link(app: &tauri::AppHandle, raw_url: &str) {
         }
     };
 
-    log::info!("Importing profile: {profile_url}");
+    log::info!("Importing profile from deep link");
 
     // Save the config URL
     let state = app.state::<AppState>();
