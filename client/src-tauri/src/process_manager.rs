@@ -4,21 +4,24 @@ use std::process::Command;
 
 /// Spawn sing-box with platform-specific privilege elevation.
 /// Returns the PID of the spawned process.
-pub fn spawn_singbox(binary_path: &Path, config_path: &Path) -> Result<u32, AppError> {
+/// `log_path` is used on Windows to capture sing-box stdout/stderr.
+pub fn spawn_singbox(binary_path: &Path, config_path: &Path, log_path: &Path) -> Result<u32, AppError> {
     let binary = binary_path.to_string_lossy().to_string();
     let config = config_path.to_string_lossy().to_string();
 
     #[cfg(target_os = "macos")]
     {
+        let _ = log_path;
         spawn_macos(&binary, &config)
     }
     #[cfg(target_os = "linux")]
     {
+        let _ = log_path;
         spawn_linux(&binary, &config)
     }
     #[cfg(target_os = "windows")]
     {
-        spawn_windows(&binary, &config)
+        spawn_windows(&binary, &config, log_path)
     }
 }
 
@@ -69,14 +72,22 @@ fn spawn_linux(binary: &str, config: &str) -> Result<u32, AppError> {
 }
 
 #[cfg(target_os = "windows")]
-fn spawn_windows(binary: &str, config: &str) -> Result<u32, AppError> {
+fn spawn_windows(binary: &str, config: &str, log_path: &Path) -> Result<u32, AppError> {
     use std::os::windows::process::CommandExt;
     const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+    let log_file = std::fs::File::create(log_path)
+        .map_err(|e| AppError::ProcessSpawnFailed(format!("Failed to create log file: {e}")))?;
+    let stderr_file = log_file
+        .try_clone()
+        .map_err(|e| AppError::ProcessSpawnFailed(format!("Failed to clone log handle: {e}")))?;
 
     let child = Command::new(binary)
         .arg("run")
         .arg("-c")
         .arg(config)
+        .stdout(log_file)
+        .stderr(stderr_file)
         .creation_flags(CREATE_NO_WINDOW)
         .spawn()
         .map_err(|e| AppError::ProcessSpawnFailed(e.to_string()))?;

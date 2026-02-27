@@ -74,8 +74,9 @@ pub async fn connect(app: AppHandle) -> Result<(), AppError> {
         }
     };
 
-    // Spawn sing-box
-    match process_manager::spawn_singbox(&binary_path, &config_path) {
+    // Spawn sing-box (log output to file for debugging)
+    let log_path = data_dir.join("singbox.log");
+    match process_manager::spawn_singbox(&binary_path, &config_path, &log_path) {
         Ok(pid) => {
             let mut process_id = state.process_id.lock().unwrap();
             *process_id = Some(pid);
@@ -90,8 +91,19 @@ pub async fn connect(app: AppHandle) -> Result<(), AppError> {
 
     // On Windows: wait for sing-box to bind the proxy port, then set system proxy
     if cfg!(target_os = "windows") {
-        if let Err(e) = wait_for_port(proxy_port, 5).await {
-            // sing-box failed to start — clean up and abort
+        if let Err(_) = wait_for_port(proxy_port, 15).await {
+            // sing-box failed to start — read log for details, clean up, and abort
+            let log_tail = std::fs::read_to_string(&log_path)
+                .unwrap_or_default()
+                .lines()
+                .rev()
+                .take(20)
+                .collect::<Vec<_>>()
+                .into_iter()
+                .rev()
+                .collect::<Vec<_>>()
+                .join("\n");
+
             let pid = {
                 let mut process_id = state.process_id.lock().unwrap();
                 process_id.take()
@@ -102,7 +114,13 @@ pub async fn connect(app: AppHandle) -> Result<(), AppError> {
             let mut status = state.status.lock().unwrap();
             *status = ConnectionStatus::Disconnected;
             let _ = app.emit("status-change", "Disconnected");
-            return Err(e);
+
+            let msg = if log_tail.is_empty() {
+                format!("sing-box did not start on port {proxy_port} within 15s (no log output)")
+            } else {
+                format!("sing-box failed to start: {log_tail}")
+            };
+            return Err(AppError::ProcessSpawnFailed(msg));
         }
 
         if let Err(e) = proxy_manager::enable_system_proxy(proxy_port) {
