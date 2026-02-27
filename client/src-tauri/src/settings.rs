@@ -30,6 +30,7 @@ pub struct AppState {
     pub settings: Mutex<AppSettings>,
     pub traffic: Mutex<TrafficData>,
     pub stats_running: Mutex<bool>,
+    pub proxy_port: Mutex<u16>,
 }
 
 impl Default for AppState {
@@ -49,6 +50,7 @@ impl Default for AppState {
                 down_total: 0,
             }),
             stats_running: Mutex::new(false),
+            proxy_port: Mutex::new(0),
         }
     }
 }

@@ -37,8 +37,17 @@ pub async fn connect(app: AppHandle) -> Result<(), AppError> {
         settings.config_url.clone()
     };
 
+    // On Windows: pick a random free port for the local proxy
+    let proxy_port = if cfg!(target_os = "windows") {
+        let port = config_manager::find_free_port()?;
+        *state.proxy_port.lock().unwrap() = port;
+        port
+    } else {
+        0
+    };
+
     // Download config
-    let config_path = match config_manager::download_and_prepare_config(&config_url, &data_dir).await {
+    let config_path = match config_manager::download_and_prepare_config(&config_url, &data_dir, proxy_port).await {
         Ok(p) => p,
         Err(e) => {
             let mut status = state.status.lock().unwrap();
@@ -81,7 +90,7 @@ pub async fn connect(app: AppHandle) -> Result<(), AppError> {
 
     // On Windows: wait for sing-box to bind the proxy port, then set system proxy
     if cfg!(target_os = "windows") {
-        if let Err(e) = wait_for_port(config_manager::PROXY_PORT, 5).await {
+        if let Err(e) = wait_for_port(proxy_port, 5).await {
             // sing-box failed to start — clean up and abort
             let pid = {
                 let mut process_id = state.process_id.lock().unwrap();
@@ -96,7 +105,7 @@ pub async fn connect(app: AppHandle) -> Result<(), AppError> {
             return Err(e);
         }
 
-        if let Err(e) = proxy_manager::enable_system_proxy(config_manager::PROXY_PORT) {
+        if let Err(e) = proxy_manager::enable_system_proxy(proxy_port) {
             // Proxy is essential — without it traffic bypasses VPN entirely
             let pid = {
                 let mut process_id = state.process_id.lock().unwrap();
@@ -200,7 +209,8 @@ pub async fn update_config(app: AppHandle) -> Result<String, AppError> {
         settings.config_url.clone()
     };
 
-    config_manager::download_and_prepare_config(&config_url, &data_dir).await?;
+    let proxy_port = *state.proxy_port.lock().unwrap();
+    config_manager::download_and_prepare_config(&config_url, &data_dir, proxy_port).await?;
 
     let now = chrono_now();
     {

@@ -12,9 +12,11 @@ fn http_client() -> Result<reqwest::Client, AppError> {
 }
 
 /// Download config JSON from the server URL, inject clash_api, and save to disk.
+/// On Windows, `proxy_port > 0` replaces TUN inbound with a mixed proxy on that port.
 pub async fn download_and_prepare_config(
     config_url: &str,
     app_data_dir: &Path,
+    proxy_port: u16,
 ) -> Result<PathBuf, AppError> {
     if config_url.is_empty() {
         return Err(AppError::ConfigUrlNotSet);
@@ -55,8 +57,8 @@ pub async fn download_and_prepare_config(
     }
 
     // On Windows: replace TUN inbound with mixed proxy (no admin required)
-    if cfg!(target_os = "windows") {
-        replace_tun_with_proxy(&mut config);
+    if proxy_port > 0 {
+        replace_tun_with_proxy(&mut config, proxy_port);
     }
 
     let config_path = app_data_dir.join("config.json");
@@ -68,12 +70,21 @@ pub async fn download_and_prepare_config(
     Ok(config_path)
 }
 
-/// Port for the local mixed proxy on Windows.
-pub const PROXY_PORT: u16 = 1080;
+/// Find a free TCP port by letting the OS assign one.
+pub fn find_free_port() -> Result<u16, AppError> {
+    use std::net::TcpListener;
+    let listener = TcpListener::bind("127.0.0.1:0")
+        .map_err(|e| AppError::IoError(format!("Failed to find free port: {e}")))?;
+    let port = listener
+        .local_addr()
+        .map_err(|e| AppError::IoError(format!("Failed to get port: {e}")))?
+        .port();
+    Ok(port)
+}
 
 /// Replace TUN inbound with a mixed (HTTP+SOCKS5) proxy inbound.
 /// This allows sing-box to run without administrator privileges on Windows.
-fn replace_tun_with_proxy(config: &mut serde_json::Value) {
+fn replace_tun_with_proxy(config: &mut serde_json::Value, port: u16) {
     // Replace TUN inbound with mixed proxy inbound
     if let Some(inbounds) = config.get_mut("inbounds").and_then(|v| v.as_array_mut()) {
         for inbound in inbounds.iter_mut() {
@@ -82,7 +93,7 @@ fn replace_tun_with_proxy(config: &mut serde_json::Value) {
                     "type": "mixed",
                     "tag": "mixed-in",
                     "listen": "127.0.0.1",
-                    "listen_port": PROXY_PORT
+                    "listen_port": port
                 });
             }
         }
