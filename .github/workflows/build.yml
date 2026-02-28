@@ -53,8 +53,6 @@ jobs:
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: client
           args: ${{ matrix.args }}
@@ -64,7 +62,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: singbox-windows
-          path: client/src-tauri/target/**/release/bundle/nsis/*.exe
+          path: client/src-tauri/target/release/bundle/nsis/*.exe
           if-no-files-found: ignore
 
       - name: Upload macOS artifact
@@ -72,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: singbox-macos
-          path: client/src-tauri/target/**/release/bundle/dmg/*.dmg
+          path: client/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
           if-no-files-found: ignore
 
   release:
@@ -87,14 +85,14 @@ jobs:
       - name: Publish release
         shell: bash
         run: |
-          TAG="${GITHUB_REF_NAME:-latest}"
+          if [[ "$GITHUB_REF_NAME" == v* ]]; then TAG="$GITHUB_REF_NAME"; else TAG="latest"; fi
 
-          EXE=$(find artifacts/singbox-windows -name "*.exe" 2>/dev/null | head -1)
-          DMG=$(find artifacts/singbox-macos -name "*.dmg" 2>/dev/null | head -1)
+          EXE=$(find artifacts/singbox-windows -name "*.exe" 2>/dev/null | head -1 || true)
+          DMG=$(find artifacts/singbox-macos -name "*.dmg" 2>/dev/null | head -1 || true)
 
           FILES=""
-          [ -n "$EXE" ] && cp "$EXE" singbox-setup.exe && FILES="$FILES singbox-setup.exe"
-          [ -n "$DMG" ] && cp "$DMG" singbox-macos.dmg && FILES="$FILES singbox-macos.dmg"
+          if [ -n "$EXE" ]; then cp "$EXE" singbox-setup.exe && FILES="$FILES singbox-setup.exe"; fi
+          if [ -n "$DMG" ]; then cp "$DMG" singbox-macos.dmg && FILES="$FILES singbox-macos.dmg"; fi
 
           if [ -z "$FILES" ]; then echo "No artifacts found"; exit 1; fi
 
