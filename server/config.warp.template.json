@@ -45,9 +45,6 @@
     {"type": "direct", "tag": "direct"}
   ],
   "route": {
-    "rules": [
-      {"port": [80, 443], "outbound": "warp"}
-    ],
-    "final": "direct"
+    "final": "warp"
   }
 }
