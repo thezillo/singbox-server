@@ -15,13 +15,10 @@ jobs:
         include:
           - os: windows-latest
             name: windows
-            artifact: singbox-windows
+            args: ''
           - os: macos-latest
-            name: macos-arm64
-            artifact: singbox-macos-arm64
-          - os: macos-13
-            name: macos-x64
-            artifact: singbox-macos-x64
+            name: macos
+            args: '--target universal-apple-darwin'
 
     runs-on: ${{ matrix.os }}
 
@@ -42,6 +39,8 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.name == 'macos' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -58,20 +57,21 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: client
+          args: ${{ matrix.args }}
 
       - name: Upload Windows artifact
         if: matrix.name == 'windows'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
+          name: singbox-windows
           path: client/src-tauri/target/**/release/bundle/nsis/*.exe
           if-no-files-found: ignore
 
       - name: Upload macOS artifact
-        if: startsWith(matrix.name, 'macos')
+        if: matrix.name == 'macos'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
+          name: singbox-macos
           path: client/src-tauri/target/**/release/bundle/dmg/*.dmg
           if-no-files-found: ignore
 
@@ -90,13 +90,11 @@ jobs:
           TAG="${GITHUB_REF_NAME:-latest}"
 
           EXE=$(find artifacts/singbox-windows -name "*.exe" 2>/dev/null | head -1)
-          DMG_ARM=$(find artifacts/singbox-macos-arm64 -name "*.dmg" 2>/dev/null | head -1)
-          DMG_X64=$(find artifacts/singbox-macos-x64 -name "*.dmg" 2>/dev/null | head -1)
+          DMG=$(find artifacts/singbox-macos -name "*.dmg" 2>/dev/null | head -1)
 
           FILES=""
           [ -n "$EXE" ] && cp "$EXE" singbox-setup.exe && FILES="$FILES singbox-setup.exe"
-          [ -n "$DMG_ARM" ] && cp "$DMG_ARM" singbox-arm64.dmg && FILES="$FILES singbox-arm64.dmg"
-          [ -n "$DMG_X64" ] && cp "$DMG_X64" singbox-x64.dmg && FILES="$FILES singbox-x64.dmg"
+          [ -n "$DMG" ] && cp "$DMG" singbox-macos.dmg && FILES="$FILES singbox-macos.dmg"
 
           if [ -z "$FILES" ]; then echo "No artifacts found"; exit 1; fi
 
