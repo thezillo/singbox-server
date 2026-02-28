@@ -838,12 +838,15 @@ generate_client_configs() {
     update_date=$(date +"%d.%m.%Y %H:%M")
     linux_script_url="${config_base_url}/linux.sh"
 
+    local windows_download_url="https://github.com/thezillo/singbox-server/releases/latest/download/singbox-setup.exe"
+
     sed -e "s|\${DEFAULT_URL}|$default_url|g" \
         -e "s|\${ADGUARD_URL}|$adguard_url|g" \
         -e "s|\${WARP_STATUS}|$warp_status|g" \
         -e "s|\${WARP_PLUS_CLASS}|$warp_plus_class|g" \
         -e "s|\${UPDATE_DATE}|$update_date|g" \
         -e "s|\${LINUX_SCRIPT_URL}|$linux_script_url|g" \
+        -e "s|\${WINDOWS_DOWNLOAD_URL}|$windows_download_url|g" \
         "$INSTALL_DIR/index.template.html" > "$CONFIGS_DIR/$CONFIG_SECRET/index.html"
 
     chmod 644 "$CONFIGS_DIR/$CONFIG_SECRET/index.html"

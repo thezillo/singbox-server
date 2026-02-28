@@ -1,0 +1,21 @@
+{
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "shell:allow-open",
+    "store:allow-get",
+    "store:allow-set",
+    "store:allow-save",
+    "store:allow-load",
+    "core:event:default",
+    "core:event:allow-listen",
+    "core:event:allow-emit",
+    "core:window:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-close",
+    "core:window:allow-minimize",
+    "deep-link:default"
+  ]
+}

@@ -4,23 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Setup</title>
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAES0lEQVR42sVXTUhcVxT+3psZf+o44zhCFFsh2QlJuwomDSQrM12WpAvRunLT0AqNzaJuYgy1uki03eQHYqEERFJIjYQUE1OaH7BSECqkuEooMsYRR4f5kdGZedPz3XlvYhdxZl40uXCHM+d8555zzz3nvnucyA1dptHYuP9Dw0j3ZrPZVvnvB7LYnaHxJ6xp2gNddw4Ggy/mLZvaK+MfnDWM7DCR4gD2YogDud3qWk8wuDhC0kF7NC7iYcMwKE+bLmu7bJ+7yij7uh7weDzRWCw6o+XCnvrb3LVhRmQvh7LBaOi66yOH2+3+URgHzZ07sPeDkU2LA7ps2qfV17+/KtHxmyHS7JypjZwxbWlhCQWz/VWqFjscDgeYM5yk7ZQFbeulei8JpAyurq7meaTJo6ykMIhtvRTDTqcT0WgUa2tr6Oz8HE+e/KEmafIoI6YURyQHGguGgIvG43E1A4EA+vv74PFU4/z5C0p+8eIFMR5DX18/pqamIImtZjqdLryxQknGM15ZWUFzczPu3buL69ev4NatX3D48BFMTt5VkzR5lBFDLHWoayVqyRGwjJeXl+PcuW9k5624fXsCV69ew/JyCH5/bT7UxIXDa6iv34czZ77AqVOfSiTu49KlYWxubirc63JN3+nMGfJjxz5Gd/eXWF+P4MaNUSwuLqK21qeSLpPJqEmaPMqIIba7+yulyzV2yokdj4CLe71ePHz4OyYm7mBu7i/cvPkzqqur8fLlch5HmjzKiCGWOtTlGrZzgFGTD4daZGjoe9nRcZWQT58+xuDggAorJ2nyKCOGWOpQt1CVOwvXau443G6vSqyOjk4cPXoEAwPfYXr6vsKwBE+f/gwzM39KbvgVNnfueLMq2D5YUmVlZWhoaMCzZ//gxInjWFhYUJM0eZQRU0z5FRUBq4K2trbyiUma5x2PJxAMBhXf5apUPMrowHadAlVYKAeyKsObmpqknLZUqHnOOZmhjHGSti4sYoilDnULXfWvdYC1zdvs0aPH2NjYwPz8HE6ebEUoFEIikcg7YhkmjzJiiKUOdbmG+dApzQF6zt0tLS3Jop9Iff+EkZFhuWB+w6FDB5FMJpBKpdUkTR5lxBBLHermIpS1/y3gjcjJL57P50NPz9fo6urC+Pg4ampqFCYSiaCtrQ2jo6O4fPkH+b+Ourq6fJm+8cfICnMqlZIrN4wDB/ajt/dbtLe3K9nY2JjcBUN4/vyFKkOXy1V0JRTtwHZHksmkSraWlhbFm52dlau4FhUVFSWVoC0HrGNhhjPxOKqqqtTNZ+c57+RipSoSz51WVlbmLym7fYI8yRDe9lAs7X1tvglt9gi8qtWjdNp8NGTw9kbGrK4H774xicUiIfluR9kuiRPaW2jNHExgsS/94b93+KDX2aOxVxM6wI5lD4ybOafpudDj/82p5YTX6/+V7ZL8bxDge7vbFWtszycl7B3cudWV/wc80DlbPQe/dAAAAABJRU5ErkJggg==">
     <style>
         :root {
-            --bg: #0a0a0f;
-            --bg-card: rgba(28, 28, 30, 0.55);
-            --bg-inner: rgba(255,255,255,0.04);
-            --bg-inner-hover: rgba(255,255,255,0.08);
+            --bg: #18181b;
+            --bg-card: #27272a;
+            --bg-inner: rgba(255,255,255,0.06);
+            --bg-inner-hover: rgba(255,255,255,0.10);
             --text-primary: #f0f0f5;
-            --text-secondary: #8e8e93;
-            --text-tertiary: #636366;
+            --text-secondary: #a1a1aa;
+            --text-tertiary: #71717a;
             --accent: #0a84ff;
             --accent-hover: #409cff;
-            --border: rgba(255,255,255,0.08);
-            --border-hover: rgba(255,255,255,0.14);
+            --border: #3f3f46;
+            --border-hover: #52525b;
             --success: #30d158;
             --amber: #ff9f0a;
             --purple: #bf5af2;
-            --glass-border: rgba(255,255,255,0.06);
             --r: 16px;
             --r-sm: 12px;
             --r-xs: 8px;
@@ -38,46 +38,6 @@
             overflow-x: hidden;
         }
 
-        .bg-mesh {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        .bg-mesh::before {
-            content: '';
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            top: -200px;
-            right: -150px;
-            background: radial-gradient(circle, rgba(10, 132, 255, 0.12) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-
-        .bg-mesh::after {
-            content: '';
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            bottom: -100px;
-            left: -200px;
-            background: radial-gradient(circle, rgba(191, 90, 242, 0.1) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-
-        .bg-orb {
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: radial-gradient(circle, rgba(255, 159, 10, 0.06) 0%, transparent 70%);
-            border-radius: 50%;
-        }
 
         .container {
             position: relative;
@@ -104,32 +64,20 @@
         .logo {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            border-radius: 22px;
             margin: 0 auto 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3), inset 0 0 0 1px rgba(255,255,255,0.15);
-            position: relative;
-        }
-
-        .logo::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 22px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%);
-            pointer-events: none;
         }
 
         .logo svg {
-            width: 38px;
-            height: 38px;
+            width: 64px;
+            height: 64px;
             fill: none;
             stroke: white;
-            stroke-width: 1.5;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            stroke-width: 28;
+            stroke-linejoin: round;
+            stroke-linecap: round;
         }
 
         h1 {
@@ -149,9 +97,7 @@
             gap: 6px;
             padding: 6px 14px;
             background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--border);
             border-radius: 20px;
             font-size: 12px;
             font-weight: 500;
@@ -176,9 +122,7 @@
         .tab-bar {
             display: flex;
             background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--border);
             border-radius: var(--r);
             padding: 4px;
             margin-bottom: 24px;
@@ -241,17 +185,14 @@
         /* ── Glass card ── */
         .card {
             background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--border);
             border-radius: var(--r);
             padding: 20px;
-            transition: border-color 0.25s, box-shadow 0.25s;
+            transition: border-color 0.25s;
         }
 
         .card:hover {
             border-color: var(--border-hover);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
         }
 
         .card + .card { margin-top: 12px; }
@@ -443,7 +384,7 @@
             align-items: center;
             gap: 8px;
             padding: 14px;
-            background: rgba(0,0,0,0.35);
+            background: #09090b;
             border: 1px solid var(--border);
             border-radius: var(--r-xs);
             font-family: ui-monospace, 'SF Mono', monospace;
@@ -492,7 +433,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 12px 14px;
-            background: rgba(0,0,0,0.3);
+            background: #09090b;
             border: 1px solid var(--border);
             border-radius: var(--r-xs);
             font-size: 13px;
@@ -573,13 +514,13 @@
     </style>
 </head>
 <body>
-    <div class="bg-mesh"><div class="bg-orb"></div></div>
-
     <div class="container">
         <div class="header">
             <div class="logo">
-                <svg viewBox="0 0 24 24">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <svg viewBox="250 230 524 540">
+                    <polygon points="512,270 730,390 512,510 294,390"/>
+                    <polygon points="294,390 512,510 512,730 294,610"/>
+                    <polygon points="730,390 512,510 512,730 730,610"/>
                 </svg>
             </div>
             <h1 data-i18n="title">Setup</h1>
@@ -615,7 +556,7 @@
                 </div>
                 <div class="step-content">
                     <div class="config-options" id="app-list">
-                        <a class="config-option" data-platform="apple" href="https://apps.apple.com/us/app/sing-box-vt/id6673731168">
+                        <a class="config-option" data-platform="apple" href="https://apps.apple.com/us/app/sing-box-vt/id6673731168" target="_blank" rel="noopener">
                             <div class="config-info">
                                 <div class="config-icon blue">
                                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
@@ -627,20 +568,19 @@
                             </div>
                             <div class="config-arrow"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
                         </a>
-                        <a class="config-option" data-platform="windows" href="https://github.com/GUI-for-Cores/GUI.for.SingBox/releases/download/v1.11.0/GUI.for.SingBox-windows-amd64.zip">
+                        <a class="config-option" data-platform="windows" href="${WINDOWS_DOWNLOAD_URL}" target="_blank" rel="noopener">
                             <div class="config-info">
                                 <div class="config-icon green">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 12V6.75l6-1.32v6.48L3 12zm6.02.09l8.5.09V5.15l-8.5 1.09v5.85zM3 13l6 .09v6.81l-6-1.15V13zm6.02.09l8.5.09v7.41l-8.5-1.64v-5.86z"/></svg>
                                 </div>
                                 <div class="config-text">
-                                    <h3>Sing-Box GUI</h3>
+                                    <h3 data-i18n="download_label">Download</h3>
                                     <p>Windows</p>
                                 </div>
                             </div>
                             <div class="config-arrow"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
                         </a>
                     </div>
-                    <a class="app-link" href="https://github.com/GUI-for-Cores/GUI.for.SingBox/releases/tag/v1.11.0" style="margin-top:8px;display:inline-block" data-i18n="other_versions">Other versions (ARM, etc.)</a>
                 </div>
             </div>
 
@@ -777,7 +717,8 @@
             apps_tab: 'Клиенты',
             proxy_tab: 'Прокси',
             step_download_app: 'Скачай приложение',
-            other_versions: 'Другие версии (ARM и др.)',
+            download_btn: 'Скачать',
+            download_label: 'Скачать',
             step_add_config: 'Добавь конфигурацию',
             config_default_desc: 'Стандартная защита',
             config_select: 'Выбрать',

@@ -1,0 +1,146 @@
+use crate::error::AppError;
+use std::path::Path;
+use std::process::Command;
+
+/// Spawn sing-box with platform-specific privilege elevation.
+/// Returns the PID of the spawned process.
+/// `log_path` is used on Windows to capture sing-box stdout/stderr.
+pub fn spawn_singbox(binary_path: &Path, config_path: &Path, log_path: &Path) -> Result<u32, AppError> {
+    let binary = binary_path.to_string_lossy().to_string();
+    let config = config_path.to_string_lossy().to_string();
+
+    #[cfg(target_os = "macos")]
+    {
+        let _ = log_path;
+        spawn_macos(&binary, &config)
+    }
+    #[cfg(target_os = "linux")]
+    {
+        let _ = log_path;
+        spawn_linux(&binary, &config)
+    }
+    #[cfg(target_os = "windows")]
+    {
+        spawn_windows(&binary, &config, log_path)
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn spawn_macos(binary: &str, config: &str) -> Result<u32, AppError> {
+    // Use osascript to get admin privileges with native macOS password prompt.
+    // The script runs sing-box in background and prints its PID.
+    let escaped_binary = binary.replace('\\', "\\\\").replace('"', "\\\"");
+    let escaped_config = config.replace('\\', "\\\\").replace('"', "\\\"");
+    let script = format!(
+        r#"do shell script "{escaped_binary} run -c {escaped_config} & echo $!" with administrator privileges"#,
+    );
+
+    let output = Command::new("osascript")
+        .arg("-e")
+        .arg(&script)
+        .output()
+        .map_err(|e| AppError::ProcessSpawnFailed(e.to_string()))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(AppError::ProcessSpawnFailed(stderr.to_string()));
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let pid: u32 = stdout
+        .trim()
+        .lines()
+        .last()
+        .unwrap_or("")
+        .trim()
+        .parse()
+        .map_err(|e: std::num::ParseIntError| AppError::ProcessSpawnFailed(e.to_string()))?;
+
+    Ok(pid)
+}
+
+#[cfg(target_os = "linux")]
+fn spawn_linux(binary: &str, config: &str) -> Result<u32, AppError> {
+    // pkexec provides a graphical authentication dialog on Linux
+    let child = Command::new("pkexec")
+        .arg(binary)
+        .arg("run")
+        .arg("-c")
+        .arg(config)
+        .spawn()
+        .map_err(|e| AppError::ProcessSpawnFailed(e.to_string()))?;
+
+    Ok(child.id())
+}
+
+#[cfg(target_os = "windows")]
+fn spawn_windows(binary: &str, config: &str, log_path: &Path) -> Result<u32, AppError> {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+    let log_file = std::fs::File::create(log_path)
+        .map_err(|e| AppError::ProcessSpawnFailed(format!("Failed to create log file: {e}")))?;
+    let stderr_file = log_file
+        .try_clone()
+        .map_err(|e| AppError::ProcessSpawnFailed(format!("Failed to clone log handle: {e}")))?;
+
+    let child = Command::new(binary)
+        .arg("run")
+        .arg("-c")
+        .arg(config)
+        .stdout(log_file)
+        .stderr(stderr_file)
+        .creation_flags(CREATE_NO_WINDOW)
+        .spawn()
+        .map_err(|e| AppError::ProcessSpawnFailed(e.to_string()))?;
+
+    Ok(child.id())
+}
+
+/// Kill the sing-box process by PID (platform-specific).
+pub fn kill_singbox(pid: u32) -> Result<(), AppError> {
+    #[cfg(target_os = "macos")]
+    {
+        // Process was started with admin privileges, need sudo to kill
+        let script = format!(r#"do shell script "kill {pid}" with administrator privileges"#);
+        let output = Command::new("osascript")
+            .arg("-e")
+            .arg(&script)
+            .output()
+            .map_err(|e| AppError::IoError(e.to_string()))?;
+        if !output.status.success() {
+            // Try regular kill as fallback
+            let _ = Command::new("kill")
+                .arg(pid.to_string())
+                .output();
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        let output = Command::new("pkexec")
+            .arg("kill")
+            .arg(pid.to_string())
+            .output()
+            .map_err(|e| AppError::IoError(e.to_string()))?;
+        if !output.status.success() {
+            let _ = Command::new("kill")
+                .arg(pid.to_string())
+                .output();
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+        Command::new("taskkill")
+            .args(["/F", "/PID", &pid.to_string()])
+            .creation_flags(CREATE_NO_WINDOW)
+            .output()
+            .map_err(|e| AppError::IoError(e.to_string()))?;
+    }
+
+    Ok(())
+}
