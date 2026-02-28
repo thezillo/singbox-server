@@ -2,11 +2,7 @@ name: Build Desktop Client
 
 on:
   push:
-    branches: [main]
-    paths: ['client/**', '.github/workflows/build.yml']
-  pull_request:
-    branches: [main]
-    paths: ['client/**', '.github/workflows/build.yml']
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -59,15 +55,18 @@ jobs:
           if-no-files-found: ignore
 
       - name: Publish release
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           EXE=$(find client/src-tauri/target -name "*.exe" -path "*/nsis/*" | head -1)
           if [ -z "$EXE" ]; then echo "No NSIS exe found"; exit 1; fi
-          cp "$EXE" singbox-setup.exe
-          gh release delete latest --yes --cleanup-tag 2>/dev/null || true
-          gh release create latest singbox-setup.exe \
-            --title "singbox" \
-            --notes "Windows desktop client"
+          TAG="${GITHUB_REF_NAME:-latest}"
+          cp "$EXE" "singbox-setup-${TAG}.exe"
+          gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
+          gh release create "$TAG" "singbox-setup-${TAG}.exe" \
+            --title "singbox $TAG" \
+            --notes "Windows desktop client $TAG" \
+            --latest
+          cp "singbox-setup-${TAG}.exe" singbox-setup.exe
+          gh release upload "$TAG" singbox-setup.exe --clobber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
