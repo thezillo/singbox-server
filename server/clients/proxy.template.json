@@ -4,7 +4,7 @@
     "servers": [
       {
         "tag": "proxy-dns",
-        "address": "https://94.140.14.14/dns-query",
+        "address": "https://1.1.1.1/dns-query",
         "detour": "proxy",
         "strategy": "ipv4_only"
       }
