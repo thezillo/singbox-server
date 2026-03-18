@@ -5,19 +5,17 @@
       {
         "tag": "proxy-dns",
         "address": "https://dns.adguard-dns.com/dns-query",
-        "address_resolver": "bootstrap-dns",
+        "address_resolver": "resolver-dns",
         "detour": "proxy",
         "strategy": "ipv4_only"
       },
       {
-        "tag": "bootstrap-dns",
-        "address": "1.1.1.1",
-        "detour": "direct"
+        "tag": "resolver-dns",
+        "address": "https://1.1.1.1/dns-query",
+        "detour": "proxy"
       }
     ],
-    "rules": [
-      { "outbound": "any", "server": "bootstrap-dns" }
-    ],
+    "rules": [{ "outbound": "any", "server": "resolver-dns" }],
     "final": "proxy-dns"
   },
   "inbounds": [
