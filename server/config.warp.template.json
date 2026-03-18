@@ -5,14 +5,14 @@
       "type": "vless",
       "tag": "vless-reality",
       "listen": "::",
-      "listen_port": 443,
+      "listen_port": ${VLESS_PORT},
       "users": [{"uuid": "${VLESS_UUID_DEFAULT}"}, {"uuid": "${VLESS_UUID_ADGUARD}"}, {"uuid": "${VLESS_UUID_PROXY}"}],
       "tls": {
         "enabled": true,
-        "server_name": "www.google.com",
+        "server_name": "ads.x5.ru",
         "reality": {
           "enabled": true,
-          "handshake": {"server": "www.google.com", "server_port": 443},
+          "handshake": {"server": "ads.x5.ru", "server_port": 443},
           "private_key": "${REALITY_PRIVATE_KEY}",
           "short_id": ["${REALITY_SHORT_ID}"]
         }
@@ -22,7 +22,7 @@
       "type": "hysteria2",
       "tag": "hysteria2",
       "listen": "::",
-      "listen_port": 8443,
+      "listen_port": ${HYSTERIA_PORT},
       "users": [{"password": "${HYSTERIA_PASSWORD}"}],
       "tls": {
         "enabled": true,
