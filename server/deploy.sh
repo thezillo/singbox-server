@@ -184,7 +184,7 @@ safe_load_credentials() {
         value="${value%\"}"
 
         case "$key" in
-            CONFIG_URL|CONFIG_SECRET|CADDY_PORT|\
+            CONFIG_URL|CONFIG_SECRET|CADDY_PORT|VLESS_PORT|HYSTERIA_PORT|\
             VLESS_UUID_DEFAULT|VLESS_UUID_ADGUARD|VLESS_UUID_PROXY|\
             REALITY_PUBLIC_KEY|REALITY_PRIVATE_KEY|\
             REALITY_SHORT_ID|HYSTERIA_PASSWORD|\
@@ -556,6 +556,30 @@ generate_caddy_port() {
     log INFO "Generated Caddy port: $CADDY_PORT"
 }
 
+generate_vless_port() {
+    if [ -n "${VLESS_PORT:-}" ]; then
+        log OK "Using existing VLESS port: $VLESS_PORT"
+        return
+    fi
+
+    VLESS_PORT=$(shuf -i 10000-60000 -n 1)
+    log INFO "Generated VLESS port: $VLESS_PORT"
+}
+
+generate_hysteria_port() {
+    if [ -n "${HYSTERIA_PORT:-}" ]; then
+        log OK "Using existing Hysteria2 port: $HYSTERIA_PORT"
+        return
+    fi
+
+    HYSTERIA_PORT=$(shuf -i 10000-60000 -n 1)
+    # Ensure it doesn't collide with VLESS port
+    while [ "$HYSTERIA_PORT" = "$VLESS_PORT" ]; do
+        HYSTERIA_PORT=$(shuf -i 10000-60000 -n 1)
+    done
+    log INFO "Generated Hysteria2 port: $HYSTERIA_PORT"
+}
+
 load_or_generate_secrets() {
     if safe_load_credentials "$INSTALL_DIR/.credentials"; then
         log OK "Loaded existing config (port: ${CADDY_PORT:-?}, path: ${CONFIG_SECRET:0:8}...)"
@@ -597,8 +621,8 @@ configure_firewall() {
 
     # Build list of ports to open
     local ports_desc=""
-    ports_desc+="      + 443/tcp    (VLESS+REALITY)\n"
-    ports_desc+="      + 8443/udp  (Hysteria2)\n"
+    ports_desc+="      + ${VLESS_PORT}/tcp    (VLESS+REALITY)\n"
+    ports_desc+="      + ${HYSTERIA_PORT}/udp  (Hysteria2)\n"
     ports_desc+="      + 80/tcp    (ACME certificates)\n"
     ports_desc+="      + ${CADDY_PORT}/tcp  (config page)\n"
 
@@ -642,8 +666,8 @@ configure_firewall() {
     if [ "$fw_tool" = "ufw" ]; then
         # Ensure SSH is open first (safety)
         ufw allow "${ssh_port}/tcp" 2>/dev/null || true
-        ufw allow 443/tcp 2>/dev/null || true
-        ufw allow 8443/udp 2>/dev/null || true
+        ufw allow "${VLESS_PORT}/tcp" 2>/dev/null || true
+        ufw allow "${HYSTERIA_PORT}/udp" 2>/dev/null || true
         ufw allow 80/tcp 2>/dev/null || true
         ufw allow "${CADDY_PORT}/tcp" 2>/dev/null || true
         # Enable UFW if not already active
@@ -654,8 +678,8 @@ configure_firewall() {
     elif [ "$fw_tool" = "firewalld" ]; then
         # Ensure SSH is open first (safety)
         firewall-cmd --permanent --add-port="${ssh_port}/tcp" 2>/dev/null || true
-        firewall-cmd --permanent --add-port=443/tcp 2>/dev/null || true
-        firewall-cmd --permanent --add-port=8443/udp 2>/dev/null || true
+        firewall-cmd --permanent --add-port="${VLESS_PORT}/tcp" 2>/dev/null || true
+        firewall-cmd --permanent --add-port="${HYSTERIA_PORT}/udp" 2>/dev/null || true
         firewall-cmd --permanent --add-port=80/tcp 2>/dev/null || true
         firewall-cmd --permanent --add-port="${CADDY_PORT}/tcp" 2>/dev/null || true
         firewall-cmd --reload 2>/dev/null || true
@@ -681,14 +705,14 @@ remove_firewall_rules() {
     log INFO "Removing firewall rules..."
 
     if [ "$fw_tool" = "ufw" ]; then
-        ufw delete allow 443/tcp 2>/dev/null || true
-        ufw delete allow 8443/udp 2>/dev/null || true
+        [ -n "${VLESS_PORT:-}" ] && ufw delete allow "${VLESS_PORT}/tcp" 2>/dev/null || true
+        [ -n "${HYSTERIA_PORT:-}" ] && ufw delete allow "${HYSTERIA_PORT}/udp" 2>/dev/null || true
         ufw delete allow 80/tcp 2>/dev/null || true
         [ -n "${CADDY_PORT:-}" ] && ufw delete allow "${CADDY_PORT}/tcp" 2>/dev/null || true
         log OK "UFW rules removed (SSH rule preserved)"
     elif [ "$fw_tool" = "firewalld" ]; then
-        firewall-cmd --permanent --remove-port=443/tcp 2>/dev/null || true
-        firewall-cmd --permanent --remove-port=8443/udp 2>/dev/null || true
+        [ -n "${VLESS_PORT:-}" ] && firewall-cmd --permanent --remove-port="${VLESS_PORT}/tcp" 2>/dev/null || true
+        [ -n "${HYSTERIA_PORT:-}" ] && firewall-cmd --permanent --remove-port="${HYSTERIA_PORT}/udp" 2>/dev/null || true
         firewall-cmd --permanent --remove-port=80/tcp 2>/dev/null || true
         [ -n "${CADDY_PORT:-}" ] && firewall-cmd --permanent --remove-port="${CADDY_PORT}/tcp" 2>/dev/null || true
         firewall-cmd --reload 2>/dev/null || true
@@ -776,6 +800,8 @@ generate_client_configs() {
         -e "s|\${REALITY_SHORT_ID}|$REALITY_SHORT_ID|g"
         -e "s|\${HYSTERIA_PASSWORD}|$HYSTERIA_PASSWORD|g"
         -e "s|\${COUNTRY_CODE}|$DEFAULT_COUNTRY|g"
+        -e "s|\${VLESS_PORT}|$VLESS_PORT|g"
+        -e "s|\${HYSTERIA_PORT}|$HYSTERIA_PORT|g"
     )
 
     # Map template name → per-config UUID and output filename (UUID-based)
@@ -870,6 +896,8 @@ create_config() {
         -e "s|\${REALITY_PRIVATE_KEY}|$REALITY_PRIVATE_KEY|g"
         -e "s|\${REALITY_SHORT_ID}|$REALITY_SHORT_ID|g"
         -e "s|\${HYSTERIA_PASSWORD}|$HYSTERIA_PASSWORD|g"
+        -e "s|\${VLESS_PORT}|$VLESS_PORT|g"
+        -e "s|\${HYSTERIA_PORT}|$HYSTERIA_PORT|g"
     )
 
     if [ "$USE_WARP" = true ]; then
@@ -981,12 +1009,12 @@ URL: $config_url
 User: $AUTH_USER
 Password: $AUTH_PASS
 
---- VLESS + REALITY (Port 443) ---
+--- VLESS + REALITY (Port $VLESS_PORT) ---
 Protocol: vless
 Address: $SERVER_IP
-Port: 443
+Port: $VLESS_PORT
 TLS: reality
-SNI: www.google.com
+SNI: ads.x5.ru
 Public Key: $REALITY_PUBLIC_KEY
 Short ID: $REALITY_SHORT_ID
 
@@ -995,11 +1023,11 @@ Users:
   adguard:  $VLESS_UUID_ADGUARD
   proxy:    $VLESS_UUID_PROXY
 
---- Hysteria2 (Port 8443) ---
+--- Hysteria2 (Port $HYSTERIA_PORT) ---
 Protocol: hysteria2
 Password: $HYSTERIA_PASSWORD
 Address: $SERVER_IP
-Port: 8443
+Port: $HYSTERIA_PORT
 TLS: true (skip verify / allow insecure)
 EOF
 
@@ -1009,6 +1037,8 @@ CREDENTIALS_VERSION=$CREDENTIALS_VERSION
 CONFIG_URL=$config_url
 CONFIG_SECRET=$CONFIG_SECRET
 CADDY_PORT=$CADDY_PORT
+VLESS_PORT=$VLESS_PORT
+HYSTERIA_PORT=$HYSTERIA_PORT
 VLESS_UUID_DEFAULT=$VLESS_UUID_DEFAULT
 VLESS_UUID_ADGUARD=$VLESS_UUID_ADGUARD
 VLESS_UUID_PROXY=$VLESS_UUID_PROXY
@@ -1071,10 +1101,10 @@ start_server() {
     done
 
     # Check ports
-    if wait_for_port 443 tcp 10; then
-        log OK "sing-box (443/tcp, 8443/udp)"
+    if wait_for_port "$VLESS_PORT" tcp 10; then
+        log OK "sing-box (${VLESS_PORT}/tcp, ${HYSTERIA_PORT}/udp)"
     else
-        log WARN "VLESS (443/tcp) may not be ready"
+        log WARN "VLESS (${VLESS_PORT}/tcp) may not be ready"
     fi
 
     if wait_for_port "$CADDY_PORT" tcp 10; then
@@ -1330,6 +1360,8 @@ main() {
     step "Generating credentials"
     load_or_generate_secrets
     generate_caddy_port
+    generate_vless_port
+    generate_hysteria_port
     generate_reality_keys
     generate_certificate
     generate_credentials
