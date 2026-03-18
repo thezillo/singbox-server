@@ -25,11 +25,11 @@
       "type": "vless",
       "tag": "proxy",
       "server": "${SERVER_IP}",
-      "server_port": 443,
+      "server_port": ${VLESS_PORT},
       "uuid": "${VLESS_UUID}",
       "tls": {
         "enabled": true,
-        "server_name": "www.google.com",
+        "server_name": "ads.x5.ru",
         "utls": { "enabled": true, "fingerprint": "chrome" },
         "reality": {
           "enabled": true,
@@ -42,7 +42,7 @@
       "type": "hysteria2",
       "tag": "hysteria2",
       "server": "${SERVER_IP}",
-      "server_port": 8443,
+      "server_port": ${HYSTERIA_PORT},
       "password": "${HYSTERIA_PASSWORD}",
       "tls": {
         "enabled": true,
